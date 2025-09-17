@@ -1,11 +1,9 @@
-
 import { useFonts } from 'expo-font';
+import { SplashScreen, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import LoginScreen from '../screens/LoginScreen';
-import SplashScreen from '../screens/splashScreen';
+import SplashScreenComponent from '../screens/splashScreen';
 
-export default function AppLayout() {
+export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Griffter: require('../assets/fonts/grifterbold.otf'),
     Outfit: require('../assets/fonts/Outfit-Regular.ttf'),
@@ -13,19 +11,25 @@ export default function AppLayout() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    if (fontsLoaded) {
-      const timer = setTimeout(() => setShowSplash(false), 5000);
-      return () => clearTimeout(timer);
+    const timer = setTimeout(() => setShowSplash(false), 5000); // Ensure splash screen hides after 5 seconds
+
+    if (!fontsLoaded) {
+      SplashScreen.preventAutoHideAsync();
+    } else {
+      SplashScreen.hideAsync();
+      setShowSplash(false); // Ensure splash screen hides when fonts are loaded
     }
+
+    return () => clearTimeout(timer); // Clear timer on unmount
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#7A9B77" />
-      </View>
-    );
+  if (!fontsLoaded || showSplash) {
+    return <SplashScreenComponent />; // Show splash screen while loading or during the 5-second delay
   }
 
-  return showSplash ? <SplashScreen /> : <LoginScreen />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+    </Stack>
+  );
 }

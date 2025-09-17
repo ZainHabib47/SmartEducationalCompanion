@@ -1,8 +1,29 @@
 
+import { Text, View } from 'react-native';
 
-
-
-<View style={styles.headingTextWrap}>
+export default function Heading() {
+    return (
+        <View style={styles.headingTextWrap}>
             <Text style={styles.headingBig}>Smart</Text>
             <Text style={styles.headingBig}>Educational Companion</Text>
-</View>
+        </View>
+    );
+}
+
+const styles = {
+    headingTextWrap: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        paddingLeft: 10,
+    },
+    headingBig: {
+        fontFamily: 'Griffter',
+        fontWeight: 'bold',
+        fontSize: 32,
+        color: '#1A2F23',
+        textAlign: 'center',
+        lineHeight: 36,
+        flexWrap: 'wrap',
+    },
+};

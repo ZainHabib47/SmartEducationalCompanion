@@ -1,6 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, Easing, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -16,19 +17,36 @@ const COLORS = {
 };
 
 export default function LoginScreen() {
+  const router = useRouter();
   const [role, setRole] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [focusedInput, setFocusedInput] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [confirmationAnim] = useState(new Animated.Value(-100));
 
   const roleOptions = [
     { label: 'Student', value: 'student' },
     { label: 'Admin', value: 'admin' },
   ];
 
+  const handleConfirm = () => {
+    setShowModal(false);
+    Animated.timing(confirmationAnim, {
+      toValue: 0,
+      duration: 500,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  };
+
   return (
     <View style={styles.container}>
+      <View style={styles.notificationWrap}>
+        <Text style={styles.notificationText}>Input all fields to make the login button visible</Text>
+      </View>
       <View style={styles.topSection}>
         <Text style={styles.heading}>Smart Educational Companion</Text>
       </View>
@@ -54,6 +72,9 @@ export default function LoginScreen() {
                 onPress={() => {
                   setRole(option.value);
                   setDropdownOpen(false);
+                  if (option.value === 'student') {
+                    setShowModal(true);
+                  }
                 }}
               >
                 <Text style={styles.dropdownItemText}>{option.label}</Text>
@@ -77,23 +98,42 @@ export default function LoginScreen() {
             </View>
             <View style={[styles.inputWrapper, focusedInput === 'password' && styles.inputWrapperFocused]}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { flex: 1 }]}
                 placeholder="Enter your Password"
                 placeholderTextColor={COLORS.inputText}
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                secureTextEntry={!showPassword}
                 onFocus={() => setFocusedInput('password')}
                 onBlur={() => setFocusedInput('')}
               />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+                activeOpacity={0.7}
+              >
+                <MaterialCommunityIcons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={24}
+                  color={COLORS.inputText}
+                />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.forgotWrapper}>
-              <Text style={styles.forgot}>Forget Password ?</Text>
-            </TouchableOpacity>
+            <View style={styles.forgotWrapper}>
+              <TouchableOpacity
+                onPress={() => {
+                  if (role === 'student') {
+                    router.push("ForgotPassword");
+                  }
+                }}
+              >
+                <Text style={styles.forgot}>Forget Password ?</Text>
+              </TouchableOpacity>
+            </View>
           </>
         )}
       </View>
-      {!dropdownOpen && (
+      {!dropdownOpen && role && email && password && (
         <View style={styles.bottomSection}>
           <TouchableOpacity style={styles.loginButton}>
             <Text style={styles.loginText}>LOG-IN</Text>
@@ -103,6 +143,28 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
       )}
+      <Modal visible={showModal} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalHeading}>Forgot Password? Don't Worry</Text>
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Enter Your Email"
+            placeholderTextColor={COLORS.inputText}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          <TouchableOpacity
+            style={styles.modalButton}
+            onPress={handleConfirm}
+          >
+            <Text style={styles.modalButtonText}>Confirm</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+      <Animated.View style={[styles.confirmationMessage, { top: confirmationAnim }]}> 
+        <Text style={styles.confirmationText}>Admin is informed successfully.</Text>
+      </Animated.View>
     </View>
   );
 }
@@ -122,6 +184,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  eyeIcon: {
+    marginLeft: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   arrowButton: {
     display: "flex",
@@ -239,6 +306,19 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     paddingRight: 5,
   },
+  notificationWrap: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: Math.max(height * 0.02, 10),
+    marginBottom: Math.max(height * 0.01, 6),
+  },
+  notificationText: {
+    color: COLORS.heading,
+    fontFamily: 'Outfit',
+    fontSize: Math.max(14, width * 0.04),
+    textAlign: 'center',
+    fontWeight: '600',
+  },
   input: {
     backgroundColor: 'transparent',
     borderRadius: 0,
@@ -301,5 +381,73 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 20,
+  },
+  modalHeading: {
+    fontFamily: 'Griffter',
+    fontWeight: 'bold',
+    fontSize: 22,
+    color: COLORS.buttonText,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalInput: {
+    backgroundColor: COLORS.inputBg,
+    borderRadius: 18,
+    width: '100%',
+    maxWidth: 400,
+    paddingHorizontal: 16,
+    height: 48,
+    color: COLORS.inputText,
+    fontFamily: 'Outfit',
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButton: {
+    backgroundColor: COLORS.buttonBg,
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    width: '80%',
+    maxWidth: 350,
+    alignSelf: 'center',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontFamily: 'Outfit',
+    fontWeight: 'bold',
+    fontSize: 18,
+    color: COLORS.buttonText,
+  },
+  confirmationMessage: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 20,
+  },
+  confirmationText: {
+    fontFamily: 'Outfit',
+    fontSize: Math.max(16, width * 0.045),
+    color: COLORS.buttonText,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.link,
+    borderRadius: 18,
+    marginTop: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
 });

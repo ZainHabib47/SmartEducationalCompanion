@@ -1,10 +1,22 @@
 import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
 
+
 const { width, height } = Dimensions.get('window');
+
+const COLORS = {
+  bg: '#F5F5F5', // light gray
+  heading: '#1A2F23', // dark greenish-black
+  inputBg: '#2E4D3A', // dark green
+  inputText: '#FFFFFF',
+  arrow: '#7A9B77', // light green
+  link: '#7A9B77', // soft green
+  buttonBg: '#2E4D3A',
+  buttonText: '#FFFFFF',
+};
 
 export default function SplashScreen() {
   return (
-    <View style={styles.container}>
+  <View style={[styles.container, { backgroundColor: COLORS.bg }]}> 
       <View style={styles.centerContent}>
         <View style={styles.headingRow}>
           <Image
@@ -13,14 +25,14 @@ export default function SplashScreen() {
             resizeMode="contain"
           />
           <View style={styles.headingTextWrap}>
-            <Text style={styles.headingBig}>Smart</Text>
-            <Text style={styles.headingBig}>Educational Companion</Text>
+            <Text style={[styles.headingBig, { color: COLORS.heading }]}>Smart</Text>
+            <Text style={[styles.headingBig, { color: COLORS.heading }]}>Educational Companion</Text>
           </View>
         </View>
       </View>
       <View style={styles.bottomSection}>
-        <Text style={styles.tagline}>
-          Smart <Text style={styles.bold}>Companion</Text>. Smarter <Text style={styles.bold}>Future</Text>.
+        <Text style={[styles.tagline, { color: COLORS.heading }]}> 
+          Smart <Text style={[styles.bold, { color: COLORS.link }]}>Companion</Text>. Smarter <Text style={[styles.bold, { color: COLORS.link }]}>Future</Text>.
         </Text>
       </View>
     </View>
@@ -38,7 +50,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Griffter',
     fontWeight: 'bold',
     fontSize: Math.max(56, Math.min(width * 0.16, height * 0.16)),
-    color: '#1A1A1A',
+    color: COLORS.heading,
     textAlign: 'left',
     lineHeight: Math.max(60, Math.min(width * 0.17, height * 0.17)),
     flexWrap: 'wrap',
@@ -82,7 +94,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#7A9B77',
+    backgroundColor: COLORS.bg,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
@@ -108,7 +120,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Griffter',
     fontWeight: 'bold',
     fontSize: Math.max(32, Math.min(width * 0.08, height * 0.08)),
-    color: '#1A1A1A',
+    color: COLORS.heading,
     textAlign: 'center',
     marginBottom: Math.max(height * 0.01, 8),
     width: '90%',
@@ -126,7 +138,7 @@ const styles = StyleSheet.create({
   tagline: {
     fontFamily: 'Outfit',
     fontSize: Math.max(16, Math.min(width * 0.045, height * 0.045)),
-    color: '#1A1A1A',
+    color: COLORS.heading,
     textAlign: 'center',
     width: '90%',
     alignSelf: 'center',
@@ -134,6 +146,6 @@ const styles = StyleSheet.create({
   bold: {
     fontFamily: 'Outfit',
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: COLORS.link,
   },
 });
