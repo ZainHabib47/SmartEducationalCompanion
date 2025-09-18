@@ -25,6 +25,8 @@ export default function LoginScreen() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [confirmationAnim] = useState(new Animated.Value(-100));
 
   const roleOptions = [
@@ -34,16 +36,62 @@ export default function LoginScreen() {
 
   const handleConfirm = () => {
     setShowModal(false);
+    // Show the confirmation message (animate down)
     Animated.timing(confirmationAnim, {
       toValue: 0,
       duration: 500,
       easing: Easing.out(Easing.ease),
       useNativeDriver: false,
-    }).start();
+    }).start(() => {
+      // After 5 seconds, animate the message back up
+      setTimeout(() => {
+        Animated.timing(confirmationAnim, {
+          toValue: -100,
+          duration: 500,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: false,
+        }).start();
+      }, 5000);
+    });
   };
 
   return (
     <View style={styles.container}>
+      {showForgotPassword && (
+        <Modal visible={showForgotPassword} transparent animationType="slide">
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalHeading}>Forgot Password? Don't Worry</Text>
+            <View style={styles.modalInputWrapper}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Enter Your Email"
+                placeholderTextColor={COLORS.inputText}
+                value={forgotPasswordEmail}
+                onChangeText={setForgotPasswordEmail}
+                keyboardType="email-address"
+              />
+            </View>
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowForgotPassword(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, !forgotPasswordEmail && { opacity: 0.5 }]}
+                disabled={!forgotPasswordEmail}
+                onPress={() => {
+                  setShowForgotPassword(false);
+                  handleConfirm();
+                }}
+              >
+                <Text style={styles.modalButtonText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
       <View style={styles.notificationWrap}>
         <Text style={styles.notificationText}>Input all fields to make the login button visible</Text>
       </View>
@@ -72,9 +120,6 @@ export default function LoginScreen() {
                 onPress={() => {
                   setRole(option.value);
                   setDropdownOpen(false);
-                  if (option.value === 'student') {
-                    setShowModal(true);
-                  }
                 }}
               >
                 <Text style={styles.dropdownItemText}>{option.label}</Text>
@@ -123,7 +168,7 @@ export default function LoginScreen() {
               <TouchableOpacity
                 onPress={() => {
                   if (role === 'student') {
-                    router.push("ForgotPassword");
+                    setShowForgotPassword(true);
                   }
                 }}
               >
@@ -400,7 +445,7 @@ const styles = StyleSheet.create({
   modalInput: {
     backgroundColor: COLORS.inputBg,
     borderRadius: 18,
-    width: '100%',
+    width: '90%',
     maxWidth: 400,
     paddingHorizontal: 16,
     height: 48,
@@ -410,15 +455,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '90%',
+    maxWidth: 400,
+  },
   modalButton: {
     backgroundColor: COLORS.buttonBg,
     borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 32,
-    width: '80%',
-    maxWidth: 350,
-    alignSelf: 'center',
+    flex: 0.45,
     alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#666',
   },
   modalButtonText: {
     fontFamily: 'Outfit',
