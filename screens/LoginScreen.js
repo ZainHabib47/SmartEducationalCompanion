@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Easing, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -24,74 +24,78 @@ export default function LoginScreen() {
   const [focusedInput, setFocusedInput] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [confirmationAnim] = useState(new Animated.Value(-100));
+  const [showBanner, setShowBanner] = useState(false);
+  const [bannerText, setBannerText] = useState('');
 
+  // Role options for dropdown
   const roleOptions = [
     { label: 'Student', value: 'student' },
     { label: 'Admin', value: 'admin' },
   ];
 
-  const handleConfirm = () => {
-    setShowModal(false);
-    // Show the confirmation message (animate down)
+  // Admin flow state: email -> otp -> reset
+  const [adminStep, setAdminStep] = useState(null); // null | 'email' | 'otp' | 'reset'
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminOtp, setAdminOtp] = useState(['', '', '', '', '']);
+  const [resendTimeout, setResendTimeout] = useState(60);
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
+  const otpRefs = useRef(Array(5).fill(null).map(() => React.createRef()));
+
+  const handleForgetPassword = () => {
+    if (role === 'student') {
+      setShowForgotPassword(true);
+    } else if (role === 'admin') {
+      setAdminStep('email');
+    }
+  };
+
+  const showConfirmationBanner = (text) => {
+    setBannerText(text);
+    setShowBanner(true);
     Animated.timing(confirmationAnim, {
-      toValue: 0,
+      toValue: 50,
       duration: 500,
       easing: Easing.out(Easing.ease),
       useNativeDriver: false,
     }).start(() => {
-      // After 5 seconds, animate the message back up
       setTimeout(() => {
         Animated.timing(confirmationAnim, {
           toValue: -100,
           duration: 500,
           easing: Easing.in(Easing.ease),
           useNativeDriver: false,
-        }).start();
-      }, 5000);
+        }).start(() => setShowBanner(false));
+      }, 3000);
     });
   };
 
+  // Admin OTP handling
+  const handleAdminOtpChange = (text, index) => {
+    const sanitized = text.replace(/\D/g, '');
+    const next = [...adminOtp];
+    next[index] = sanitized.slice(-1);
+    setAdminOtp(next);
+    if (sanitized && index < 4) {
+      const nextRef = otpRefs.current[index + 1]?.current;
+      nextRef && nextRef.focus();
+    }
+  };
+
+  // Resend timer
+  useEffect(() => {
+    if (adminStep === 'otp' && resendTimeout > 0) {
+      const timer = setTimeout(() => setResendTimeout((t) => t - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [adminStep, resendTimeout]);
+
+  // Add to existing render return
   return (
     <View style={styles.container}>
-      {showForgotPassword && (
-        <Modal visible={showForgotPassword} transparent animationType="slide">
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalHeading}>Forgot Password? Don't Worry</Text>
-            <View style={styles.modalInputWrapper}>
-              <TextInput
-                style={styles.modalInput}
-                placeholder="Enter Your Email"
-                placeholderTextColor={COLORS.inputText}
-                value={forgotPasswordEmail}
-                onChangeText={setForgotPasswordEmail}
-                keyboardType="email-address"
-              />
-            </View>
-            <View style={styles.modalButtonsContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowForgotPassword(false)}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, !forgotPasswordEmail && { opacity: 0.5 }]}
-                disabled={!forgotPasswordEmail}
-                onPress={() => {
-                  setShowForgotPassword(false);
-                  handleConfirm();
-                }}
-              >
-                <Text style={styles.modalButtonText}>Confirm</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-      )}
       <View style={styles.notificationWrap}>
         <Text style={styles.notificationText}>Input all fields to make the login button visible</Text>
       </View>
@@ -166,11 +170,7 @@ export default function LoginScreen() {
             </View>
             <View style={styles.forgotWrapper}>
               <TouchableOpacity
-                onPress={() => {
-                  if (role === 'student') {
-                    setShowForgotPassword(true);
-                  }
-                }}
+                onPress={handleForgetPassword}
               >
                 <Text style={styles.forgot}>Forget Password ?</Text>
               </TouchableOpacity>
@@ -180,40 +180,200 @@ export default function LoginScreen() {
       </View>
       {!dropdownOpen && role && email && password && (
         <View style={styles.bottomSection}>
-          <TouchableOpacity style={styles.loginButton}>
+          <View style={styles.loginButton}>
             <Text style={styles.loginText}>LOG-IN</Text>
-            <View style={styles.loginIconCircle}>
+            <TouchableOpacity
+              onPress={() => {
+                if (role === 'admin') {
+                  router.push('/admin');
+                } else if (role === 'student') {
+                  router.push('/student');
+                }
+              }}
+              activeOpacity={0.8}
+              style={styles.loginIconCircle}
+            >
               <Ionicons name="arrow-forward" size={22} color={COLORS.arrow} />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
-      <Modal visible={showModal} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalHeading}>Forgot Password? Don't Worry</Text>
-          <TextInput
-            style={styles.modalInput}
-            placeholder="Enter Your Email"
-            placeholderTextColor={COLORS.inputText}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-          <TouchableOpacity
-            style={styles.modalButton}
-            onPress={handleConfirm}
-          >
-            <Text style={styles.modalButtonText}>Confirm</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-      <Animated.View style={[styles.confirmationMessage, { top: confirmationAnim }]}> 
-        <Text style={styles.confirmationText}>Admin is informed successfully.</Text>
-      </Animated.View>
+      {/* Student forgot password modal (email only, then banner) */}
+      {showForgotPassword && (
+        <Modal visible={showForgotPassword} transparent animationType="slide">
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalHeading}>Forgot Password? Don't Worry</Text>
+            <View style={styles.modalInputWrapper}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Enter Your Email"
+                placeholderTextColor={COLORS.inputText}
+                value={forgotPasswordEmail}
+                onChangeText={setForgotPasswordEmail}
+                keyboardType="email-address"
+              />
+            </View>
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowForgotPassword(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, !forgotPasswordEmail && { opacity: 0.5 }]}
+                disabled={!forgotPasswordEmail}
+                onPress={() => {
+                  setShowForgotPassword(false);
+                  showConfirmationBanner('Admin is informed successfully.');
+                }}
+              >
+                <Text style={styles.modalButtonText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Admin forgot password flow: Email -> OTP -> Reset Password */}
+      {adminStep && (
+        <Modal visible transparent animationType="slide">
+          <View style={styles.modalContainer}>
+            {adminStep === 'email' && (
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <Text style={styles.modalHeading}>Forgot Password (Admin)</Text>
+                <View style={styles.modalInputWrapper}>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Enter Your Email"
+                    placeholderTextColor={COLORS.inputText}
+                    value={adminEmail}
+                    onChangeText={setAdminEmail}
+                    keyboardType="email-address"
+                  />
+                </View>
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setAdminStep(null)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, !adminEmail && { opacity: 0.5 }]}
+                    disabled={!adminEmail}
+                    onPress={() => {
+                      setResendTimeout(60);
+                      setAdminOtp(['', '', '', '', '']);
+                      setAdminStep('otp');
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Next</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {adminStep === 'otp' && (
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <Text style={styles.modalHeading}>Enter 5-digit OTP</Text>
+                <View style={styles.otpContainer}>
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <TextInput
+                      key={i}
+                      ref={otpRefs.current[i]}
+                      style={styles.otpInput}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      value={adminOtp[i]}
+                      onChangeText={(t) => handleAdminOtpChange(t, i)}
+                    />
+                  ))}
+                </View>
+                <TouchableOpacity 
+                  style={[styles.resendButton, resendTimeout > 0 && styles.disabledButton]}
+                  disabled={resendTimeout > 0}
+                  onPress={() => setResendTimeout(60)}
+                >
+                  <Text style={styles.resendText}>
+                    {resendTimeout > 0 ? `Resend OTP in ${resendTimeout}s` : 'Resend OTP'}
+                  </Text>
+                </TouchableOpacity>
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setAdminStep(null)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, adminOtp.join('').length !== 5 && { opacity: 0.5 }]}
+                    disabled={adminOtp.join('').length !== 5}
+                    onPress={() => setAdminStep('reset')}
+                  >
+                    <Text style={styles.modalButtonText}>Confirm</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {adminStep === 'reset' && (
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <Text style={styles.modalHeading}>Set New Password</Text>
+                <View style={styles.modalInputWrapper}>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="New Password"
+                    placeholderTextColor={COLORS.inputText}
+                    secureTextEntry
+                    value={newAdminPassword}
+                    onChangeText={setNewAdminPassword}
+                  />
+                </View>
+                <View style={styles.modalInputWrapper}>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Confirm New Password"
+                    placeholderTextColor={COLORS.inputText}
+                    secureTextEntry
+                    value={confirmAdminPassword}
+                    onChangeText={setConfirmAdminPassword}
+                  />
+                </View>
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setAdminStep(null)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, (!newAdminPassword || newAdminPassword !== confirmAdminPassword) && { opacity: 0.5 }]}
+                    disabled={!newAdminPassword || newAdminPassword !== confirmAdminPassword}
+                    onPress={() => {
+                      setAdminStep(null);
+                      showConfirmationBanner('PASSWORD CHANGED SUCCESSFULLY');
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Confirm</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </Modal>
+      )}
+
+      {showBanner && (
+        <Animated.View style={[styles.confirmationMessage, { top: confirmationAnim }]}> 
+          <Text style={styles.confirmationText}>{bannerText}</Text>
+        </Animated.View>
+      )}
     </View>
   );
 }
 
+// Add to LoginScreen styles
 const styles = StyleSheet.create({
   dropdownMenu: {
     position: 'absolute',
@@ -230,6 +390,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  // removed button-based role selection; using dropdown above inputs instead
   eyeIcon: {
     marginLeft: 8,
     justifyContent: 'center',
@@ -249,7 +410,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit',
     fontSize: Math.max(16, width * 0.045),
     color: COLORS.inputBg,
-    fontWeight: 'bold',
     textAlign: 'center',
   },
   roleText: {
@@ -265,7 +425,6 @@ const styles = StyleSheet.create({
   },
   selectedRoleText: {
     color: COLORS.link,
-    fontWeight: 'bold',
   },
   inputWrapperFocused: {
     borderWidth: 2,
@@ -312,7 +471,6 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontFamily: 'Griffter',
-    fontWeight: 'bold',
     fontSize: Math.max(28, Math.min(width * 0.08, height * 0.08)),
     color: COLORS.heading,
     textAlign: 'center',
@@ -362,7 +520,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit',
     fontSize: Math.max(14, width * 0.04),
     textAlign: 'center',
-    fontWeight: '600',
   },
   input: {
     backgroundColor: 'transparent',
@@ -414,7 +571,6 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontFamily: 'Outfit',
-    fontWeight: 'bold',
     fontSize: Math.max(18, width * 0.05),
     color: COLORS.buttonText,
     marginRight: 12,
@@ -436,11 +592,16 @@ const styles = StyleSheet.create({
   },
   modalHeading: {
     fontFamily: 'Griffter',
-    fontWeight: 'bold',
     fontSize: 22,
     color: COLORS.buttonText,
     marginBottom: 20,
     textAlign: 'center',
+  },
+  modalInputWrapper: {
+    width: '90%',
+    maxWidth: 400,
+    alignItems: 'center',
+    marginBottom: 12,
   },
   modalInput: {
     backgroundColor: COLORS.inputBg,
@@ -474,7 +635,6 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     fontFamily: 'Outfit',
-    fontWeight: 'bold',
     fontSize: 18,
     color: COLORS.buttonText,
   },
@@ -489,7 +649,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit',
     fontSize: Math.max(16, width * 0.045),
     color: COLORS.buttonText,
-    fontWeight: 'bold',
     textAlign: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -497,9 +656,33 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     marginTop: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 }
   },
-});
+  otpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  otpInput: {
+    width: 50,
+    height: 50,
+    backgroundColor: COLORS.inputBg,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    textAlign: 'center',
+    color: COLORS.inputText,
+    fontFamily: 'Outfit',
+    fontSize: 20,
+  },
+  resendButton: {
+    marginBottom: 20,
+  },
+  resendText: {
+    fontFamily: 'Outfit',
+    color: COLORS.link,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  disabledButton: {
+    opacity: 0.5,
+  }});

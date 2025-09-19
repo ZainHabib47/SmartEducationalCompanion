@@ -1,0 +1,163 @@
+import { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { Animated, Dimensions, Easing, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FONT_FAMILIES } from '../assets/fonts/config';
+// Change this line
+// Remove the colors import and add this instead
+const COLORS = {
+  bg: '#F5F5F5',
+  heading: '#1A2F23',
+  inputBg: '#2E4D3A',
+  inputText: '#FFFFFF',
+  arrow: '#7A9B77',
+  link: '#7A9B77',
+  buttonBg: '#2E4D3A',
+  buttonText: '#FFFFFF',
+};
+
+// Remove any duplicate COLORS definitions in this file
+const { width, height } = Dimensions.get('window');
+
+// Change component to accept props
+export default function AdminForgetPasswordModal({ onClose, onSuccess }) {
+  // State hooks should be at the top
+  const [otp, setOtp] = useState(['', '', '', '', '']);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [resendTimeout, setResendTimeout] = useState(60);
+  const [confirmationAnim] = useState(new Animated.Value(-100));
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const otpRefs = Array(5).fill().map(() => useRef(null)); // Proper ref initialization
+
+  // OTP Input handling
+  const handleOtpChange = (text, index) => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+    
+    if (text && index < 4) {
+      otpRefs[index + 1].current.focus();
+    }
+  };
+
+  // Resend OTP Countdown
+  useEffect(() => {
+    if (resendTimeout > 0) {
+      const timer = setTimeout(() => setResendTimeout(resendTimeout - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimeout]);
+
+  // Confirmation animation
+  const showSuccessMessage = (message) => {
+    setShowConfirmation(true);
+    Animated.timing(confirmationAnim, {
+      toValue: 50,
+      duration: 500,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(confirmationAnim, {
+          toValue: -100,
+          duration: 500,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: false,
+        }).start(() => setShowConfirmation(false));
+      }, 3000);
+    });
+  };
+
+  const handlePasswordChange = () => {
+    if (password === confirmPassword) {
+      showSuccessMessage('Password changed successfully');
+      setShowPasswordFields(false);
+    }
+  };
+
+  return (
+    <View style={styles.modalContent}>
+      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <Ionicons name="close" size={24} color={COLORS.heading} />
+      </TouchableOpacity>
+
+      {/* Move the remaining JSX here */}
+      <View style={styles.container}>
+        {/* Rest of your component JSX */}
+      </View>
+    </View>
+  );
+}
+
+// Update styles
+const styles = StyleSheet.create({
+  modalContent: {
+    backgroundColor: COLORS.bg,
+    borderRadius: 20,
+    padding: 25,
+    width: '90%',
+    maxWidth: 500,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    padding: 5,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+    paddingHorizontal: Math.max(width * 0.07, 16),
+  },
+  inputWrapper: {
+    // Same as ForgetPasswordScreen
+  },
+  input: {
+    // Same as ForgetPasswordScreen
+  },
+  confirmButton: {
+    // Same as ForgetPasswordScreen
+  },
+  confirmationMessage: {
+    // Same as ForgetPasswordScreen
+  },
+  confirmationText: {
+    // Same as ForgetPasswordScreen
+  },
+  
+  // New styles
+  otpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 20,
+  },
+  otpInput: {
+    width: 50,
+    height: 50,
+    backgroundColor: COLORS.inputBg,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    textAlign: 'center',
+    color: COLORS.inputText,
+    fontFamily: FONT_FAMILIES.REGULAR,
+    fontSize: 20,
+  },
+  otpText: {
+    fontFamily: FONT_FAMILIES.BOLD,
+    fontSize: 18,
+    color: COLORS.heading,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  resendButton: {
+    alignSelf: 'center',
+    marginVertical: 15,
+  },
+  resendText: {
+    fontFamily: FONT_FAMILIES.REGULAR,
+    color: COLORS.link,
+    fontSize: 14,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+});

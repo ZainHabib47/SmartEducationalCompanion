@@ -18,7 +18,6 @@ const styles = {
     },
     headingBig: {
         fontFamily: 'Griffter',
-        fontWeight: 'bold',
         fontSize: 32,
         color: '#1A2F23',
         textAlign: 'center',

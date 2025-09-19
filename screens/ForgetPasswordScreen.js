@@ -7,6 +7,7 @@ import Heading from '../components/heading';
 import AppLoading from 'expo-app-loading';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { FONT_FAMILIES } from '../assets/fonts/config';
 
 const { width, height } = Dimensions.get('window');
 
@@ -109,51 +110,10 @@ export default function ForgotPasswordScreen() {
   );
 }
 
+import { FONT_FAMILIES } from '../assets/fonts/config';
+
+// Update styles to use font constants
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: Math.max(width * 0.07, 16),
-    width: '100%',
-    height: '100%',
-    minHeight: height,
-    minWidth: width,
-  },
-  topSection: {
-    marginTop: Math.max(height * 0.08, 32),
-    marginBottom: Math.max(height * 0.04, 18),
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 500,
-    alignSelf: 'center',
-  },
-  formSection: {
-    width: '100%',
-    maxWidth: 500,
-    alignItems: 'center',
-    marginBottom: Math.max(height * 0.04, 18),
-    alignSelf: 'center',
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.inputBg,
-    borderRadius: 18,
-    width: '100%',
-    maxWidth: 900,
-    marginBottom: Math.max(height * 0.025, 12),
-    paddingHorizontal: 12,
-    position: 'relative',
-    height: Math.max(48, height * 0.07),
-    alignSelf: 'center',
-  },
-  inputWrapperFocused: {
-    borderWidth: 2,
-    borderColor: COLORS.arrow,
-    borderRadius: 18,
-  },
   input: {
     backgroundColor: 'transparent',
     borderRadius: 0,
@@ -163,7 +123,8 @@ const styles = StyleSheet.create({
     height: Math.max(48, height * 0.07),
     color: COLORS.inputText,
     fontFamily: 'Outfit',
-    fontSize: Math.max(16, width * 0.045),
+    fontSize: Math.max(16, width * 0.045), // Good responsive calculation
+    // Consider adding lineHeight: Math.max(16, width * 0.045) * 1.5
     alignSelf: 'center',
     textAlign: 'center',
   },
@@ -176,7 +137,8 @@ const styles = StyleSheet.create({
     paddingTop: "15%",
     left: 0,
     alignSelf: 'center',
-    width: 350
+    width: '90%', // Instead of fixed 350
+    bottom: height * 0.06, // Remove Math.max if not needed
   },
   confirmButton: {
     flexDirection: 'row',
@@ -186,29 +148,17 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingVertical: Math.max(height * 0.018, 10),
     paddingHorizontal: Math.max(width * 0.12, 32),
-    width: '80%',
+    // Change fixed width to percentage:
+    width: '90%', // Instead of 350
     maxWidth: 350,
     alignSelf: 'center',
   },
   confirmText: {
-    fontFamily: 'Outfit-Bold',  // Use bold variant
+    fontFamily: FONT_FAMILIES.BOLD,
     // Remove fontWeight property
   },
   confirmationText: {
-    fontFamily: 'Outfit-Bold',
+    fontFamily: FONT_FAMILIES.BOLD,
     // Remove fontWeight property
   },
-    fontSize: Math.max(16, width * 0.045),
-    color: COLORS.buttonText,
-    textAlign: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#4CAF50', // Green background
-    borderRadius: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-);
+});
