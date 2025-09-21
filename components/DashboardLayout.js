@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -159,15 +159,20 @@ export default function DashboardLayout({
 			<View style={styles.middleSection}>
 				{showNews && (
 					<View style={styles.newsCard}>
+						{/* Title Section - 10% of the box height */}
 						<View style={styles.newsHeader}>
+							<Ionicons name="newspaper" size={24} color={COLORS.inputBg} />
 							<Text style={styles.newsTitle}>{newsTitle}</Text>
 						</View>
+						
+						{/* News Content Section - 90% of the box height */}
 						<View style={styles.newsContent}>
 							{newsData.length > 0 ? (
 								<Animated.View
 									style={{
 										opacity: newsFadeAnim,
 										transform: [{ translateY: newsTranslateY }],
+										flex: 1,
 									}}
 								>
 									{(() => {
@@ -179,16 +184,22 @@ export default function DashboardLayout({
 												onPress={() => handleNewsPress(news.url)}
 												activeOpacity={0.8}
 											>
-												<Text style={styles.newsItemTitle} numberOfLines={3}>
-													{news.title}
-												</Text>
-												<View style={styles.newsItemFooter}>
-													<Text style={styles.newsSource}>{news.source}</Text>
-													<Text style={styles.newsDate}>{news.publishedAt}</Text>
-												</View>
-												<Text style={styles.newsLink} numberOfLines={1}>
-													Read more ↗
-												</Text>
+												<ScrollView 
+													style={styles.newsScrollView}
+													showsVerticalScrollIndicator={false}
+													contentContainerStyle={styles.newsScrollContent}
+												>
+													<Text style={styles.newsItemTitle}>
+														{news.title}
+													</Text>
+													<View style={styles.newsItemFooter}>
+														<Text style={styles.newsSource}>{news.source}</Text>
+														<Text style={styles.newsDate}>{news.publishedAt}</Text>
+													</View>
+													<Text style={styles.newsLink}>
+														Read more ↗
+													</Text>
+												</ScrollView>
 											</TouchableOpacity>
 										);
 									})()}
@@ -340,7 +351,7 @@ const styles = StyleSheet.create({
 		borderRadius: 20,
 		padding: 20,
 		marginBottom: 24,
-		minHeight: height * 0.28,
+		height: height * 0.28, // Fixed height for the carousel box
 		borderWidth: 2,
 		borderColor: COLORS.inputBg,
 		shadowColor: '#000',
@@ -353,33 +364,44 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'center',
-		marginBottom: 16,
+		height: height * 0.035, // 10% of the news card height
+		marginBottom: 8,
 	},
 	newsTitle: {
 		fontFamily: 'Griffter',
-		fontSize: 20,
+		fontSize: 18,
 		color: COLORS.inputBg,
 		marginLeft: 8,
 		textAlign: 'center',
 	},
 	newsContent: {
-		flex: 1,
+		flex: 1, // Takes remaining 90% of the height
+		overflow: 'hidden',
 	},
 	newsItem: {
-		paddingVertical: 12,
-		paddingHorizontal: 16,
+		flex: 1,
 		backgroundColor: '#F8F9FA',
 		borderRadius: 12,
-		marginBottom: 12,
 		borderLeftWidth: 4,
 		borderLeftColor: COLORS.inputBg,
+		overflow: 'hidden',
+	},
+	newsScrollView: {
+		flex: 1,
+		paddingHorizontal: 16,
+		paddingVertical: 12,
+	},
+	newsScrollContent: {
+		flexGrow: 1,
+		justifyContent: 'space-between',
 	},
 	newsItemTitle: {
 		fontFamily: 'Griffter',
-		fontSize: 14,
+		fontSize: 16,
 		color: COLORS.inputBg,
-		lineHeight: 20,
-		marginBottom: 8,
+		lineHeight: 22,
+		marginBottom: 12,
+		flex: 1,
 	},
 	newsItemFooter: {
 		flexDirection: 'row',
@@ -397,11 +419,12 @@ const styles = StyleSheet.create({
 		color: COLORS.link,
 	},
 	newsLink: {
-		marginTop: 10,
+		marginTop: 8,
 		fontFamily: 'Griffter',
 		fontSize: 14,
 		color: COLORS.link,
 		textDecorationLine: 'underline',
+		alignSelf: 'flex-start',
 	},
 	newsPlaceholder: {
 		flex: 1,

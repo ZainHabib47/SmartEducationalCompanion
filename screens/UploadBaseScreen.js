@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { usePathname } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import UploadConfirmationModal from '../components/UploadConfirmationModal';
 
 const COLORS = {
 	bg: '#F5F5F5',
@@ -18,9 +19,21 @@ const COLORS = {
 export default function UploadBaseScreen() {
 	const [selectedFile, setSelectedFile] = useState(null);
 	const [storeInDataCenter, setStoreInDataCenter] = useState(true);
+	const [showConfirmation, setShowConfirmation] = useState(false);
 	const pathname = usePathname();
+	const router = useRouter();
 	const isAttendance = pathname?.toLowerCase().includes('attendance');
-	const title = isAttendance ? 'Upload Attendance' : 'Upload Schedule';
+	const isTimetable = pathname?.toLowerCase().includes('timetable');
+	const isSchedule = pathname?.toLowerCase().includes('schedule');
+	
+	let title = 'Upload Document';
+	if (isAttendance) {
+		title = 'Upload Attendance';
+	} else if (isTimetable) {
+		title = 'Upload Timetable';
+	} else if (isSchedule) {
+		title = 'Upload Schedule';
+	}
 
 	const handlePickPdf = async () => {
 		const res = await DocumentPicker.getDocumentAsync({ type: 'application/pdf', multiple: false });
@@ -42,16 +55,49 @@ export default function UploadBaseScreen() {
 			return;
 		}
 
-		Alert.alert(
-			'Upload Successful',
-			`${isAttendance ? 'Attendance' : 'Schedule'} uploaded successfully. Transaction ID: ${Math.floor(Math.random() * 1e6)}`,
-			[{ text: 'OK' }],
-			{ cancelable: true }
-		);
+		// Show confirmation modal
+		setShowConfirmation(true);
+	};
+
+	const handleConfirmationClose = () => {
+		setShowConfirmation(false);
+		router.back();
+	};
+
+	const handleCancel = () => {
+		if (selectedFile) {
+			// If file is selected, show cancel confirmation
+			Alert.alert(
+				'Cancel Upload',
+				'Are you sure you want to cancel? Your selected file will be lost.',
+				[
+					{ text: 'Keep File', style: 'cancel' },
+					{ 
+						text: 'Cancel Upload', 
+						style: 'destructive',
+						onPress: () => {
+							setSelectedFile(null);
+							router.back();
+						}
+					}
+				]
+			);
+		} else {
+			// If no file selected, just go back
+			router.back();
+		}
 	};
 
 	return (
 		<View style={styles.container}>
+			{/* Cancel/Back Button */}
+			<TouchableOpacity style={styles.cancelButton} onPress={handleCancel} activeOpacity={0.8}>
+				<Ionicons name="arrow-back" size={24} color={COLORS.inputBg} />
+				<Text style={styles.cancelText}>
+					{selectedFile ? 'Cancel' : 'Back'}
+				</Text>
+			</TouchableOpacity>
+			
 			<Text style={styles.title}>{title}</Text>
 			<View style={styles.card}>
 				<Text style={styles.sectionTitle}>Choose file type</Text>
@@ -93,6 +139,15 @@ export default function UploadBaseScreen() {
 					<Text style={styles.confirmText}>Confirm Upload</Text>
 				</TouchableOpacity>
 			</View>
+
+			{/* Confirmation Modal */}
+			<UploadConfirmationModal
+				visible={showConfirmation}
+				onClose={handleConfirmationClose}
+				title={`${isTimetable ? 'Timetable' : isSchedule ? 'Schedule' : 'Document'} Uploaded Successfully`}
+				message={`Your ${isTimetable ? 'timetable' : isSchedule ? 'schedule' : 'document'} has been uploaded successfully! Transaction ID: ${Math.floor(Math.random() * 1e6)}`}
+				operationType="upload"
+			/>
 		</View>
 	);
 }
@@ -102,6 +157,30 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: COLORS.bg,
 		padding: 20,
+	},
+	cancelButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		alignSelf: 'flex-start',
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		marginTop: Platform.select({ ios: 50, android: 20 }),
+		marginBottom: 10,
+		backgroundColor: '#fff',
+		borderRadius: 20,
+		borderWidth: 1,
+		borderColor: COLORS.inputBg,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 2,
+		elevation: 2,
+	},
+	cancelText: {
+		fontFamily: 'Outfit',
+		fontSize: 16,
+		color: COLORS.inputBg,
+		marginLeft: 6,
 	},
 	title: {
 		fontFamily: 'Griffter',

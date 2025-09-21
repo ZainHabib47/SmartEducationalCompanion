@@ -17,7 +17,7 @@ export default function StudentDashboard() {
             bottomIcons={[
                 { key: 'home', icon: 'home' },
                 { key: 'bell', icon: 'notifications' },
-                { key: 'calendar', icon: 'calendar' },
+                { key: 'chat', icon: 'chatbubbles' },
                 { key: 'settings', icon: 'settings' },
             ]}
         />
