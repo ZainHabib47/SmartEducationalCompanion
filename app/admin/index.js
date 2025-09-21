@@ -1,7 +1,9 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 
 export default function AdminDashboard() {
+    const router = useRouter();
     // Sample news data - replace with API call later
     const sampleNewsData = [
         {
@@ -27,6 +29,14 @@ export default function AdminDashboard() {
         }
     ];
 
+    const handlePressCard = (key) => {
+        if (key === 'timetable') {
+            router.push('/admin/attendance');
+        } else if (key === 'schedules') {
+            router.push('/admin/schedule');
+        }
+    };
+
     return (
         <DashboardLayout
             headerWelcome="Welcome Back!"
@@ -36,6 +46,7 @@ export default function AdminDashboard() {
             showNews
             newsTitle="Educational News"
             newsData={sampleNewsData}
+            onPressCard={handlePressCard}
             gridItems={[
                 { key: 'students', icon: 'people', label: 'Students' },
                 { key: 'attendance', icon: 'checkbox-outline', label: 'Attendance' },
@@ -45,7 +56,7 @@ export default function AdminDashboard() {
             bottomIcons={[
                 { key: 'home', icon: 'home' },
                 { key: 'bell', icon: 'notifications' },
-                { key: 'calendar', icon: 'calendar' },
+                { key: 'calendar', icon: 'chatbubbles' },
                 { key: 'settings', icon: 'settings' },
             ]}
         />

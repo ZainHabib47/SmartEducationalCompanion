@@ -1,5 +1,6 @@
 const fonts = {
-  'Outfit-Regular': require('./Outfit-Regular.ttf')
+  'Outfit-Regular': require('./Outfit-Regular.ttf'),
+  'grifterbold': require('./grifterbold.otf')
 };
 
 export const fontAssets = Object.keys(fonts).map((key) => fonts[key]);

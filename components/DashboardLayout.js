@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -27,6 +27,7 @@ export default function DashboardLayout({
 	gridItems = [], // [{ key, icon, label }]
 	bottomIcons = [], // [{ key, icon, onPress }]
 }) {
+	const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
 	const slideAnim = useRef(new Animated.Value(-100)).current;
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 	const avatarScale = useRef(new Animated.Value(0)).current;
@@ -34,6 +35,8 @@ export default function DashboardLayout({
 	const cardFadeAnim = useRef(new Animated.Value(0)).current;
 	const bottomSlideAnim = useRef(new Animated.Value(100)).current;
 	const bottomFadeAnim = useRef(new Animated.Value(0)).current;
+	const newsFadeAnim = useRef(new Animated.Value(1)).current;
+	const newsTranslateY = useRef(new Animated.Value(0)).current;
 
 	useEffect(() => {
 		// Top section animations
@@ -89,6 +92,28 @@ export default function DashboardLayout({
 		}, 600);
 	}, []);
 
+	// Auto-rotate news every 10 seconds with animation
+	useEffect(() => {
+		if (!showNews || !newsData || newsData.length === 0) return;
+
+		const animateOutIn = () => {
+			Animated.parallel([
+				Animated.timing(newsFadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+				Animated.timing(newsTranslateY, { toValue: 10, duration: 300, useNativeDriver: true }),
+			]).start(() => {
+				setCurrentNewsIndex((prev) => (prev + 1) % newsData.length);
+				newsTranslateY.setValue(-10);
+				Animated.parallel([
+					Animated.timing(newsFadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }),
+					Animated.spring(newsTranslateY, { toValue: 0, useNativeDriver: true, friction: 7, tension: 60 }),
+				]).start();
+			});
+		};
+
+		const intervalId = setInterval(animateOutIn, 10000);
+		return () => clearInterval(intervalId);
+	}, [showNews, newsData]);
+
 	const handleNewsPress = async (url) => {
 		try {
 			const supported = await Linking.canOpenURL(url);
@@ -139,22 +164,35 @@ export default function DashboardLayout({
 						</View>
 						<View style={styles.newsContent}>
 							{newsData.length > 0 ? (
-								newsData.slice(0, 3).map((news, index) => (
-									<TouchableOpacity
-										key={news.id || index}
-										style={styles.newsItem}
-										onPress={() => handleNewsPress(news.url)}
-										activeOpacity={0.7}
-									>
-										<Text style={styles.newsItemTitle} numberOfLines={2}>
-											{news.title}
-										</Text>
-										<View style={styles.newsItemFooter}>
-											<Text style={styles.newsSource}>{news.source}</Text>
-											<Text style={styles.newsDate}>{news.publishedAt}</Text>
-										</View>
-									</TouchableOpacity>
-								))
+								<Animated.View
+									style={{
+										opacity: newsFadeAnim,
+										transform: [{ translateY: newsTranslateY }],
+									}}
+								>
+									{(() => {
+										const news = newsData[currentNewsIndex % newsData.length];
+										return (
+											<TouchableOpacity
+												key={news.id || currentNewsIndex}
+												style={styles.newsItem}
+												onPress={() => handleNewsPress(news.url)}
+												activeOpacity={0.8}
+											>
+												<Text style={styles.newsItemTitle} numberOfLines={3}>
+													{news.title}
+												</Text>
+												<View style={styles.newsItemFooter}>
+													<Text style={styles.newsSource}>{news.source}</Text>
+													<Text style={styles.newsDate}>{news.publishedAt}</Text>
+												</View>
+												<Text style={styles.newsLink} numberOfLines={1}>
+													Read more ↗
+												</Text>
+											</TouchableOpacity>
+										);
+									})()}
+								</Animated.View>
 							) : (
 								<View style={styles.newsPlaceholder}>
 									<Text style={styles.newsPlaceholderText}>Loading educational news...</Text>
@@ -314,13 +352,15 @@ const styles = StyleSheet.create({
 	newsHeader: {
 		flexDirection: 'row',
 		alignItems: 'center',
+		justifyContent: 'center',
 		marginBottom: 16,
 	},
 	newsTitle: {
-		fontFamily: 'Outfit',
+		fontFamily: 'Griffter',
 		fontSize: 20,
 		color: COLORS.inputBg,
 		marginLeft: 8,
+		textAlign: 'center',
 	},
 	newsContent: {
 		flex: 1,
@@ -335,7 +375,7 @@ const styles = StyleSheet.create({
 		borderLeftColor: COLORS.inputBg,
 	},
 	newsItemTitle: {
-		fontFamily: 'Outfit',
+		fontFamily: 'Griffter',
 		fontSize: 14,
 		color: COLORS.inputBg,
 		lineHeight: 20,
@@ -355,6 +395,13 @@ const styles = StyleSheet.create({
 		fontFamily: 'Outfit',
 		fontSize: 12,
 		color: COLORS.link,
+	},
+	newsLink: {
+		marginTop: 10,
+		fontFamily: 'Griffter',
+		fontSize: 14,
+		color: COLORS.link,
+		textDecorationLine: 'underline',
 	},
 	newsPlaceholder: {
 		flex: 1,
