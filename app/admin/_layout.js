@@ -7,6 +7,9 @@ export default function AdminLayout() {
 			<Stack.Screen name="index" />
 			<Stack.Screen name="attendance" />
 			<Stack.Screen name="schedule" />
+            <Stack.Screen name="notification" />
+			<Stack.Screen name="chatbot" />
+			<Stack.Screen name="settings" />
 		</Stack>
 	);
 }

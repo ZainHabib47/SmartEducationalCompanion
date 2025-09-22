@@ -54,7 +54,7 @@ export default function ForgotPasswordScreen() {
         easing: Easing.out(Easing.ease),
         useNativeDriver: false,
       }).start(() => {
-        // Hide the notification after 3 seconds
+        // Hide the notification after 3 secondsn
         setTimeout(() => {
           Animated.timing(confirmationAnim, {
             toValue: -100,
