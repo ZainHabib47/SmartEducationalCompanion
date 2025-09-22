@@ -18,11 +18,12 @@ const COLORS = {
 };
 
 export default function UploadConfirmationModal({ 
-	visible, 
-	onClose, 
-	title = "Upload Successful", 
-	message = "Your file has been uploaded successfully!",
-	operationType = "upload" // upload, attendance, etc.
+    visible, 
+    onClose, 
+    title = "Upload Successful", 
+    message = "Your file has been uploaded successfully!",
+    operationType = "upload", // upload, attendance, etc.
+    variant = 'success' // 'success' | 'error'
 }) {
 	const scaleAnim = useRef(new Animated.Value(0)).current;
 	const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -99,7 +100,7 @@ export default function UploadConfirmationModal({
 						}
 					]}
 				>
-					{/* Success Icon */}
+                    {/* Icon */}
 					<View style={styles.iconContainer}>
 						<Animated.View
 							style={[
@@ -115,26 +116,18 @@ export default function UploadConfirmationModal({
 								}
 							]}
 						>
-							<Svg width={80} height={80} viewBox="0 0 80 80">
-								{/* Background Circle */}
-								<Circle
-									cx="40"
-									cy="40"
-									r="35"
-									fill={COLORS.success}
-									stroke={COLORS.success}
-									strokeWidth="2"
-								/>
-								{/* Checkmark */}
-								<Path
-									d="M25 40 L35 50 L55 30"
-									stroke="white"
-									strokeWidth="4"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									fill="none"
-								/>
-							</Svg>
+                            {variant === 'success' ? (
+                                <Svg width={80} height={80} viewBox="0 0 80 80">
+                                    <Circle cx="40" cy="40" r="35" fill={COLORS.success} stroke={COLORS.success} strokeWidth="2" />
+                                    <Path d="M25 40 L35 50 L55 30" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                                </Svg>
+                            ) : (
+                                <Svg width={80} height={80} viewBox="0 0 80 80">
+                                    <Circle cx="40" cy="40" r="35" fill={COLORS.danger} stroke={COLORS.danger} strokeWidth="2" />
+                                    <Path d="M28 28 L52 52" stroke="white" strokeWidth="4" strokeLinecap="round" />
+                                    <Path d="M52 28 L28 52" stroke="white" strokeWidth="4" strokeLinecap="round" />
+                                </Svg>
+                            )}
 						</Animated.View>
 					</View>
 

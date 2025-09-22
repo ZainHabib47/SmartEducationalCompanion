@@ -41,6 +41,18 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleBottomPress = (key) => {
+        if (key === 'home') {
+            router.push('/admin');
+        } else if (key === 'bell') {
+            router.push('/admin/notification');
+        } else if (key === 'calendar') {
+            // Placeholder for chatbot route
+        } else if (key === 'settings') {
+            // Placeholder for settings route
+        }
+    };
+
     return (
         <DashboardLayout
             headerWelcome="Welcome Back!"
@@ -58,10 +70,10 @@ export default function AdminDashboard() {
                 { key: 'schedules', icon: 'time', label: 'Schedules' },
             ]}
             bottomIcons={[
-                { key: 'home', icon: 'home' },
-                { key: 'bell', icon: 'notifications' },
-                { key: 'calendar', icon: 'chatbubbles' },
-                { key: 'settings', icon: 'settings' },
+                { key: 'home', icon: 'home', onPress: () => handleBottomPress('home') },
+                { key: 'bell', icon: 'notifications', onPress: () => handleBottomPress('bell') },
+                { key: 'calendar', icon: 'chatbubbles', onPress: () => handleBottomPress('calendar') },
+                { key: 'settings', icon: 'settings', onPress: () => handleBottomPress('settings') },
             ]}
         />
     );
