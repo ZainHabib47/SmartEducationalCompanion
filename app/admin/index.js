@@ -30,7 +30,9 @@ export default function AdminDashboard() {
     ];
 
     const handlePressCard = (key) => {
-        if (key === 'attendance') {
+        if (key === 'students') {
+            router.push('/admin/students');
+        } else if (key === 'attendance') {
             router.push('/admin/attendance');
         } else if (key === 'timetable') {
             router.push('/admin/timetable');
