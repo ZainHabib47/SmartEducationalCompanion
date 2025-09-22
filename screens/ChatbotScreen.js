@@ -25,8 +25,14 @@ export default function ChatbotScreen() {
     const listRef = useRef(null);
     const [showScrollToBottom, setShowScrollToBottom] = useState(false);
     const [keyboardOffset, setKeyboardOffset] = useState(0);
+    const [composerHeight, setComposerHeight] = useState(0);
     const baseBottomNav = ((height * 0.16) - 10 + 24);
+    const MESSAGES_EXTRA_GAP = 16; // lift messages a bit above the input
     const composerBottom = keyboardOffset > 0 ? keyboardOffset + 50 : baseBottomNav;
+    const listBottomPadding = (keyboardOffset > 0
+        ? keyboardOffset + composerHeight + MESSAGES_EXTRA_GAP
+        : baseBottomNav + composerHeight + MESSAGES_EXTRA_GAP);
+    const footerHeight = (keyboardOffset > 0 ? keyboardOffset : baseBottomNav) + composerHeight + MESSAGES_EXTRA_GAP + 6;
 
     const handleSend = () => {
         const trimmed = input.trim();
@@ -54,15 +60,23 @@ export default function ChatbotScreen() {
     useEffect(() => {
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
             setKeyboardOffset(e.endCoordinates.height);
+            setTimeout(scrollToBottom, 50);
         });
         const hideSub = Keyboard.addListener('keyboardDidHide', () => {
             setKeyboardOffset(0);
+            setTimeout(scrollToBottom, 50);
         });
         return () => {
             showSub.remove();
             hideSub.remove();
         };
     }, []);
+
+    useEffect(() => {
+        // After new messages render, keep the latest visible
+        const id = setTimeout(scrollToBottom, 50);
+        return () => clearTimeout(id);
+    }, [messages.length, keyboardOffset, composerHeight]);
 
     const go = (key) => {
         if (key === 'home') router.push('/admin');
@@ -103,7 +117,8 @@ export default function ChatbotScreen() {
                     keyExtractor={(item) => item.id}
                     renderItem={renderItem}
                     style={{ flex: 1 }}
-                    contentContainerStyle={[styles.listContent, { paddingBottom: composerBottom + 20 }]}
+                    contentContainerStyle={[styles.listContent, { paddingBottom: 8 }]}
+                    ListFooterComponent={<View style={{ height: footerHeight }} />}
                     onScroll={onScroll}
                     onContentSizeChange={scrollToBottom}
                     showsVerticalScrollIndicator={false}
@@ -112,7 +127,7 @@ export default function ChatbotScreen() {
                     scrollEnabled
                 />
                 {showScrollToBottom && (
-                    <TouchableOpacity style={styles.scrollDownBtn} onPress={scrollToBottom} activeOpacity={0.85}>
+                    <TouchableOpacity style={[styles.scrollDownBtn, { bottom: (keyboardOffset > 0 ? keyboardOffset : baseBottomNav) + composerHeight + 20 }]} onPress={scrollToBottom} activeOpacity={0.85}>
                         <Ionicons name="arrow-down" size={18} color={COLORS.inputBg} />
                     </TouchableOpacity>
                 )}
@@ -121,8 +136,10 @@ export default function ChatbotScreen() {
             {/* Composer */}
             <View style={[
                 styles.composer,
-                { bottom: keyboardOffset > 0 ? keyboardOffset + 50 : ((height * 0.16) - 10 + 24) }
-            ]}>
+                { bottom: composerBottom }
+            ]}
+                onLayout={(e) => setComposerHeight(e.nativeEvent.layout.height)}
+            >
                 <TextInput
                     style={styles.input}
                     placeholder="Type a message"
@@ -212,8 +229,8 @@ const styles = StyleSheet.create({
     },
     botBubble: {
         backgroundColor: COLORS.bubbleBot,
-        borderWidth: 1,
-        borderColor: '#DDE8D8',
+        borderWidth: 2,
+        borderColor: COLORS.inputBg,
         borderTopLeftRadius: 4,
     },
     bubbleText: {

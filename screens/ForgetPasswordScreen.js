@@ -1,13 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from 'expo-font';
-import { Animated, Dimensions, Easing, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import Heading from '../components/heading';
-import AppLoading from 'expo-app-loading';
+import { useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Animated, Dimensions, Easing, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { FONT_FAMILIES } from '../assets/fonts/config';
+import Heading from '../components/heading';
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,6 +46,16 @@ export default function ForgotPasswordScreen() {
 
   const handleConfirm = () => {
     if (email.trim()) {
+      // Save request for admin notifications
+      (async () => {
+        try {
+          const key = 'forgot_requests';
+          const existing = await AsyncStorage.getItem(key);
+          const list = existing ? JSON.parse(existing) : [];
+          const req = { id: Date.now().toString(), email: email.trim(), createdAt: new Date().toISOString() };
+          await AsyncStorage.setItem(key, JSON.stringify([req, ...list].slice(0, 200)));
+        } catch (e) {}
+      })();
       setShowConfirmation(true);
       Animated.timing(confirmationAnim, {
         toValue: 50,
@@ -110,7 +119,6 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-import { FONT_FAMILIES } from '../assets/fonts/config';
 
 // Update styles to use font constants
 const styles = StyleSheet.create({

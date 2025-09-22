@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Dimensions, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '../constants/colors';
 
 const { width, height } = Dimensions.get('window');
@@ -9,6 +9,7 @@ export default function OTPModal({
     visible, 
     onClose, 
     onVerify,
+    onResend,
     type = 'delete', // 'delete' or 'add'
     studentName = ''
 }) {
@@ -65,22 +66,18 @@ export default function OTPModal({
         });
     };
 
-    const handleVerify = () => {
-        if (otp.length !== 6) {
-            return;
-        }
-        
+    const handleVerify = async () => {
+        if (otp.length !== 6 || isVerifying) return;
         setIsVerifying(true);
-        // Simulate API call delay
-        setTimeout(() => {
-            onVerify(otp);
+        try {
+            await onVerify?.(otp);
+        } finally {
             setIsVerifying(false);
-        }, 1000);
+        }
     };
 
     const handleResendOTP = () => {
-        // Simulate sending OTP
-        Alert.alert('OTP Sent', 'A new OTP has been sent to your registered mobile number.');
+        onResend?.();
     };
 
     const getTitle = () => {

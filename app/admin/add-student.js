@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import OTPModal from '../../components/OTPModal';
 import UploadConfirmationModal from '../../components/UploadConfirmationModal';
 import { COLORS } from '../../constants/colors';
 
@@ -32,6 +33,11 @@ export default function AddStudentScreen() {
         registrationNumber: ''
     });
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [confirmationVariant, setConfirmationVariant] = useState('success'); // 'success' | 'error'
+    const [confirmationTitle, setConfirmationTitle] = useState('Student Added Successfully');
+    const [confirmationMessage, setConfirmationMessage] = useState('The new student has been added to the system successfully!');
+    const [showOTPModal, setShowOTPModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
     const slideAnim = useRef(new Animated.Value(-100)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -67,21 +73,30 @@ export default function AddStudentScreen() {
     const handleSave = () => {
         // Validate required fields
         if (!formData.fullName.trim() || !formData.fatherName.trim() || !formData.email.trim()) {
-            Alert.alert('Error', 'Please fill in all required fields');
+            setConfirmationVariant('error');
+            setConfirmationTitle('Submission Rejected');
+            setConfirmationMessage('Please fill in all required fields (Full Name, Father Name, Email).');
+            setShowConfirmationModal(true);
             return;
         }
 
         // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
-            Alert.alert('Error', 'Please enter a valid email address');
+            setConfirmationVariant('error');
+            setConfirmationTitle('Submission Rejected');
+            setConfirmationMessage('Please enter a valid email address.');
+            setShowConfirmationModal(true);
             return;
         }
 
         // Validate phone number format
         const phoneRegex = /^\+92-\d{3}-\d{7}$/;
         if (!phoneRegex.test(formData.phoneNumber)) {
-            Alert.alert('Error', 'Please enter phone number in format: +92-XXX-XXXXXXX');
+            setConfirmationVariant('error');
+            setConfirmationTitle('Submission Rejected');
+            setConfirmationMessage('Please enter phone number in format: +92-XXX-XXXXXXX');
+            setShowConfirmationModal(true);
             return;
         }
 
@@ -90,9 +105,8 @@ export default function AddStudentScreen() {
             formData.registrationNumber = generateRegistrationNumber();
         }
 
-        // Simulate API call to save student
-        console.log('Saving student:', formData);
-        setShowConfirmationModal(true);
+        // Step 1: Ask for OTP before finalizing
+        setShowOTPModal(true);
     };
 
     const handleCancel = () => {
@@ -108,7 +122,53 @@ export default function AddStudentScreen() {
 
     const handleConfirmationClose = () => {
         setShowConfirmationModal(false);
-        router.back();
+        if (confirmationVariant === 'success') {
+            router.back();
+        }
+    };
+
+    const sendOtp = async () => {
+        // TODO: call backend to send OTP
+        Alert.alert('OTP Sent', 'A 6-digit OTP has been sent to your phone.');
+    };
+
+    const verifyOtpAndSubmit = async (otp) => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+        try {
+            // TODO: verify OTP with backend
+            const valid = otp === '123456';
+            if (!valid) {
+                setShowOTPModal(false);
+                setConfirmationVariant('error');
+                setConfirmationTitle('Invalid OTP');
+                setConfirmationMessage('The OTP you entered is incorrect. Please try again.');
+                setShowConfirmationModal(true);
+                return;
+            }
+            // TODO: submit student to backend & get acceptance/rejection
+            // Placeholder validation to simulate backend decision
+            const serverAccepts = (
+                formData.fullName.trim().length >= 3 &&
+                formData.fatherName.trim().length >= 3 &&
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim()) &&
+                /^\+92-\d{3}-\d{7}$/.test(formData.phoneNumber.trim())
+            );
+
+            setShowOTPModal(false);
+            if (serverAccepts) {
+                setConfirmationVariant('success');
+                setConfirmationTitle('Student Added Successfully');
+                setConfirmationMessage('The new student has been added to the system successfully!');
+            } else {
+                setConfirmationVariant('error');
+                setConfirmationTitle('Submission Rejected');
+                setConfirmationMessage('The provided information did not pass verification. Please review the fields and try again.');
+            }
+            setShowConfirmationModal(true);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -132,14 +192,7 @@ export default function AddStudentScreen() {
                 </TouchableOpacity>
                 
                 <Text style={styles.headerTitle}>Add New Student</Text>
-                
-                <TouchableOpacity 
-                    style={styles.saveButton}
-                    onPress={handleSave}
-                    activeOpacity={0.8}
-                >
-                    <Ionicons name="checkmark" size={24} color={COLORS.buttonText} />
-                </TouchableOpacity>
+
             </Animated.View>
 
             {/* Form */}
@@ -310,9 +363,19 @@ export default function AddStudentScreen() {
             <UploadConfirmationModal
                 visible={showConfirmationModal}
                 onClose={handleConfirmationClose}
-                title="Student Added Successfully"
-                message="The new student has been added to the system successfully!"
+                title={confirmationTitle}
+                message={confirmationMessage}
                 operationType="add"
+                variant={confirmationVariant}
+            />
+
+            {/* OTP Modal */}
+            <OTPModal
+                visible={showOTPModal}
+                onClose={() => setShowOTPModal(false)}
+                onVerify={verifyOtpAndSubmit}
+                onResend={sendOtp}
+                type="add"
             />
         </View>
     );

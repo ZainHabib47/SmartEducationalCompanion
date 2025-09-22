@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import BottomNav from '../components/BottomNav';
 import UploadConfirmationModal from '../components/UploadConfirmationModal';
 
@@ -29,6 +30,9 @@ export default function NotificationScreen() {
     const [showConfirm, setShowConfirm] = useState(false);
     const [showError, setShowError] = useState(false);
     const [errorText, setErrorText] = useState('Please fill all required fields.');
+    const [requests, setRequests] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
+    const [history, setHistory] = useState([]);
 
     const handleBottomPress = (key) => {
         if (key === 'home') {
@@ -42,7 +46,7 @@ export default function NotificationScreen() {
         }
     };
 
-    const handleSend = () => {
+    const handleSend = async () => {
         // Basic validation
         if (!message.trim()) {
             setErrorText('Message is required.');
@@ -63,6 +67,22 @@ export default function NotificationScreen() {
                 return;
             }
         }
+        // Save to notification history
+        try {
+            const key = 'admin_notifications';
+            const existing = await AsyncStorage.getItem(key);
+            const list = existing ? JSON.parse(existing) : [];
+            const entry = {
+                id: Date.now().toString(),
+                message: message.trim(),
+                recipientType,
+                recipients: recipientType === 'single' ? [singleEmail.trim()] : (recipientType === 'group' ? groupEmails.map((e)=>e.trim()) : ['class']),
+                createdAt: new Date().toISOString(),
+            };
+            const next = [entry, ...list].slice(0, 500);
+            await AsyncStorage.setItem(key, JSON.stringify(next));
+            setHistory(next);
+        } catch (e) {}
         setShowConfirm(true);
     };
 
@@ -80,6 +100,33 @@ export default function NotificationScreen() {
             return prev.slice(0, groupCount);
         });
     }, [groupCount]);
+
+    const loadRequests = async () => {
+        try {
+            const raw = await AsyncStorage.getItem('forgot_requests');
+            const list = raw ? JSON.parse(raw) : [];
+            setRequests(list);
+        } catch (e) {}
+    };
+
+    const loadHistory = async () => {
+        try {
+            const raw = await AsyncStorage.getItem('admin_notifications');
+            const list = raw ? JSON.parse(raw) : [];
+            setHistory(list);
+        } catch (e) {}
+    };
+
+    useEffect(() => {
+        loadRequests();
+        loadHistory();
+    }, []);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await Promise.all([loadRequests(), loadHistory()]);
+        setRefreshing(false);
+    };
 
     return (
         <KeyboardAvoidingView style={{ flex: 1, backgroundColor: COLORS.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -203,6 +250,50 @@ export default function NotificationScreen() {
                         <Ionicons name="send" size={18} color={COLORS.buttonText} style={{ marginRight: 8 }} />
                         <Text style={styles.sendButtonText}>Send Notification</Text>
                     </TouchableOpacity>
+                </View>
+
+                <View style={[styles.card, styles.cardSpacer]}>
+                    <Text style={styles.sectionTitle}>Forgot Password Requests</Text>
+                    {requests.length === 0 ? (
+                        <Text style={styles.emptyText}>No requests yet.</Text>
+                    ) : (
+                        <FlatList
+                            data={requests}
+                            keyExtractor={(item) => item.id}
+                            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                            renderItem={({ item }) => (
+                                <View style={styles.requestItem}>
+                                    <Text style={styles.requestEmail}>{item.email}</Text>
+                                    <Text style={styles.requestTime}>{new Date(item.createdAt).toLocaleString()}</Text>
+                                </View>
+                            )}
+                        />
+                    )}
+                    <TouchableOpacity style={[styles.sendButton, { marginTop: 12 }]} onPress={onRefresh} activeOpacity={0.9}>
+                        <Ionicons name="refresh" size={18} color={COLORS.buttonText} style={{ marginRight: 8 }} />
+                        <Text style={styles.sendButtonText}>Refresh</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={[styles.card, styles.cardSpacer]}>
+                    <Text style={styles.sectionTitle}>Notification History</Text>
+                    {history.length === 0 ? (
+                        <Text style={styles.emptyText}>No notifications sent yet.</Text>
+                    ) : (
+                        <FlatList
+                            data={history}
+                            keyExtractor={(item) => item.id}
+                            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                            renderItem={({ item }) => (
+                                <View style={styles.requestItem}>
+                                    <Text style={styles.requestEmail}>{item.message}</Text>
+                                    <Text style={styles.requestTime}>
+                                        {item.recipientType.toUpperCase()} • {new Date(item.createdAt).toLocaleString()}
+                                    </Text>
+                                </View>
+                            )}
+                        />
+                    )}
                 </View>
 
                 <View style={{ height: 140 }} />
@@ -400,6 +491,28 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: COLORS.buttonText,
         fontWeight: '600',
+    },
+    cardSpacer: { marginTop: 16 },
+    emptyText: {
+        fontFamily: 'Outfit',
+        fontSize: 14,
+        color: COLORS.link,
+    },
+    requestItem: {
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#EEF2EC',
+    },
+    requestEmail: {
+        fontFamily: 'Outfit',
+        fontSize: 14,
+        color: COLORS.heading,
+    },
+    requestTime: {
+        fontFamily: 'Outfit',
+        fontSize: 12,
+        color: COLORS.link,
+        marginTop: 2,
     },
 });
 

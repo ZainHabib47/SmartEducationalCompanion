@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
     Animated,
     Dimensions,
     ScrollView,
@@ -13,6 +12,7 @@ import {
     View
 } from 'react-native';
 import OTPModal from '../../components/OTPModal';
+import UploadConfirmationModal from '../../components/UploadConfirmationModal';
 import { COLORS } from '../../constants/colors';
 
 const { width, height } = Dimensions.get('window');
@@ -21,12 +21,12 @@ const { width, height } = Dimensions.get('window');
 const sampleStudents = [
     {
         id: 1,
-        fullName: 'Ahmed Hassan',
-        fatherName: 'Muhammad Hassan',
+        fullName: 'Zain Habib',
+        fatherName: 'Noor Habib Shah',
         address: '123 Main Street, Karachi',
         pastSchool: 'ABC High School',
-        phoneNumber: '+92-300-1234567',
-        email: 'ahmed.hassan@email.com',
+        phoneNumber: '+923189043757',
+        email: 'zainhabib@google.com',
         password: 'password123',
         achievements: 'First Position in Science Fair 2023',
         rank: '1st',
@@ -67,8 +67,12 @@ export default function StudentsListScreen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedStudent, setExpandedStudent] = useState(null);
     const [showOTPModal, setShowOTPModal] = useState(false);
-    const [otpModalType, setOtpModalType] = useState('delete'); // 'delete' or 'add'
+    const [otpModalType, setOtpModalType] = useState('delete'); // currently used for delete only
     const [studentToDelete, setStudentToDelete] = useState(null);
+    const [confirmVisible, setConfirmVisible] = useState(false);
+    const [confirmVariant, setConfirmVariant] = useState('success');
+    const [confirmTitle, setConfirmTitle] = useState('');
+    const [confirmMessage, setConfirmMessage] = useState('');
     
     const slideAnim = useRef(new Animated.Value(-100)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -119,13 +123,22 @@ export default function StudentsListScreen() {
     };
 
     const handleAddStudent = () => {
-        setOtpModalType('add');
-        setShowOTPModal(true);
+        // Directly navigate to add-student; OTP will be requested at the end of the add flow
+        router.push('/admin/add-student');
     };
 
-    const handleOTPVerification = (otp) => {
-        // Simulate OTP verification
-        if (otp === '123456') {
+    const requestAddStudentOtp = async () => {
+        // TODO: replace with backend API call
+        setConfirmVariant('success');
+        setConfirmTitle('OTP Sent');
+        setConfirmMessage('A 6-digit OTP has been sent to your phone.');
+        setConfirmVisible(true);
+    };
+
+    const handleOTPVerification = async (otp) => {
+        // TODO: replace with backend verification
+        const valid = otp === '123456';
+        if (valid) {
             if (otpModalType === 'delete' && studentToDelete) {
                 // Delete student
                 const updatedStudents = students.filter(s => s.id !== studentToDelete.id);
@@ -135,14 +148,17 @@ export default function StudentsListScreen() {
                     student.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase())
                 ));
                 setStudentToDelete(null);
-                Alert.alert('Success', 'Student deleted successfully!');
-            } else if (otpModalType === 'add') {
-                // Navigate to add student screen
-                router.push('/admin/add-student');
+                setConfirmVariant('success');
+                setConfirmTitle('Deleted');
+                setConfirmMessage('Student deleted successfully.');
+                setConfirmVisible(true);
             }
             setShowOTPModal(false);
         } else {
-            Alert.alert('Error', 'Invalid OTP. Please try again.');
+            setConfirmVariant('error');
+            setConfirmTitle('Invalid OTP');
+            setConfirmMessage('The OTP you entered is incorrect. Please try again.');
+            setConfirmVisible(true);
         }
     };
 
@@ -313,8 +329,19 @@ export default function StudentsListScreen() {
                 visible={showOTPModal}
                 onClose={() => setShowOTPModal(false)}
                 onVerify={handleOTPVerification}
+                onResend={requestAddStudentOtp}
                 type={otpModalType}
                 studentName={studentToDelete?.fullName}
+            />
+
+            {/* Confirmation Modal */}
+            <UploadConfirmationModal
+                visible={confirmVisible}
+                onClose={() => setConfirmVisible(false)}
+                title={confirmTitle}
+                message={confirmMessage}
+                variant={confirmVariant}
+                operationType={otpModalType === 'delete' ? 'delete' : 'otp'}
             />
         </View>
     );

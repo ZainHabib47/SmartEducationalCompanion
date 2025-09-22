@@ -46,10 +46,10 @@ export default function AdminDashboard() {
             router.push('/admin');
         } else if (key === 'bell') {
             router.push('/admin/notification');
-        } else if (key === 'calendar') {
-            // Placeholder for chatbot route
-        } else if (key === 'settings') {
-            // Placeholder for settings route
+		} else if (key === 'calendar') {
+			router.push('/admin/chatbot');
+		} else if (key === 'settings') {
+			router.push('/admin/settings');
         }
     };
 

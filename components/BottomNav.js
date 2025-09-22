@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.inputBg,
         width: '100%',
         position: 'absolute',
-        bottom: 0,
+        bottom: 10,
         left: 0,
         right: 0,
         borderTopLeftRadius: 25,
