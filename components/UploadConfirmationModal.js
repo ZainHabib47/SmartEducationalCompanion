@@ -6,12 +6,12 @@ const { width, height } = Dimensions.get('window');
 
 const COLORS = {
 	bg: '#F5F5F5',
-	heading: '#1A2F23',
-	inputBg: '#2E4D3A',
+	heading: '#03045e',
+	inputBg: '#03045e',
 	inputText: '#FFFFFF',
-	arrow: '#7A9B77',
-	link: '#7A9B77',
-	buttonBg: '#2E4D3A',
+	arrow: '#03045e',
+	link: '#023e8a',
+	buttonBg: '#03045e',
 	buttonText: '#FFFFFF',
 	success: '#4CAF50',
 	danger: '#F44336',

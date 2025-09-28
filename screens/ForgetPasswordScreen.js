@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -12,12 +11,12 @@ const { width, height } = Dimensions.get('window');
 
 const COLORS = {
   bg: '#F5F5F5', // light gray
-  heading: '#1A2F23', // dark greenish-black
-  inputBg: '#2E4D3A', // dark green
+  heading: '#03045e', // dark blue
+  inputBg: '#03045e', // dark blue
   inputText: '#FFFFFF',
-  arrow: '#7A9B77', // light green
-  link: '#7A9B77', // soft green
-  buttonBg: '#2E4D3A',
+  arrow: '#03045e', // dark blue for icons
+  link: '#023e8a', // soft blue
+  buttonBg: '#03045e',
   buttonText: '#FFFFFF',
 };
 
@@ -46,16 +45,8 @@ export default function ForgotPasswordScreen() {
 
   const handleConfirm = () => {
     if (email.trim()) {
-      // Save request for admin notifications
-      (async () => {
-        try {
-          const key = 'forgot_requests';
-          const existing = await AsyncStorage.getItem(key);
-          const list = existing ? JSON.parse(existing) : [];
-          const req = { id: Date.now().toString(), email: email.trim(), createdAt: new Date().toISOString() };
-          await AsyncStorage.setItem(key, JSON.stringify([req, ...list].slice(0, 200)));
-        } catch (e) {}
-      })();
+      // TODO: Implement OTP sending logic here
+      // This should send an OTP to the email and redirect to OTP verification
       setShowConfirmation(true);
       Animated.timing(confirmationAnim, {
         toValue: 50,
@@ -63,7 +54,7 @@ export default function ForgotPasswordScreen() {
         easing: Easing.out(Easing.ease),
         useNativeDriver: false,
       }).start(() => {
-        // Hide the notification after 3 secondsn
+        // Hide the notification after 3 seconds
         setTimeout(() => {
           Animated.timing(confirmationAnim, {
             toValue: -100,
@@ -112,7 +103,7 @@ export default function ForgotPasswordScreen() {
 
       {showConfirmation && (
         <Animated.View style={[styles.confirmationMessage, { top: confirmationAnim }]}>
-          <Text style={styles.confirmationText}>Admin is notified successfully</Text>
+          <Text style={styles.confirmationText}>OTP sent successfully</Text>
         </Animated.View>
       )}
     </View>

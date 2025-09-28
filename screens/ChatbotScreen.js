@@ -8,12 +8,12 @@ const { height } = Dimensions.get('window');
 
 const COLORS = {
     bg: '#F5F5F5',
-    heading: '#1A2F23',
-    inputBg: '#2E4D3A',
+    heading: '#03045e',
+    inputBg: '#03045e',
     inputText: '#FFFFFF',
     bubbleUser: '#DDE8D8',
     bubbleBot: '#FFFFFF',
-    link: '#7A9B77',
+    link: '#023e8a',
 };
 
 export default function ChatbotScreen() {

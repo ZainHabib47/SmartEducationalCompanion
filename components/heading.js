@@ -19,7 +19,7 @@ const styles = {
     headingBig: {
         fontFamily: 'Griffter',
         fontSize: 32,
-        color: '#1A2F23',
+        color: '#03045e',
         textAlign: 'center',
         lineHeight: 36,
         flexWrap: 'wrap',

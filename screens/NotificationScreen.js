@@ -10,12 +10,12 @@ const { width, height } = Dimensions.get('window');
 
 const COLORS = {
     bg: '#F5F5F5',
-    heading: '#1A2F23',
-    inputBg: '#2E4D3A',
+    heading: '#03045e',
+    inputBg: '#03045e',
     inputText: '#FFFFFF',
-    arrow: '#7A9B77',
-    link: '#7A9B77',
-    buttonBg: '#2E4D3A',
+    arrow: '#03045e',
+    link: '#023e8a',
+    buttonBg: '#03045e',
     buttonText: '#FFFFFF',
 };
 
@@ -30,7 +30,6 @@ export default function NotificationScreen() {
     const [showConfirm, setShowConfirm] = useState(false);
     const [showError, setShowError] = useState(false);
     const [errorText, setErrorText] = useState('Please fill all required fields.');
-    const [requests, setRequests] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [history, setHistory] = useState([]);
 
@@ -101,13 +100,6 @@ export default function NotificationScreen() {
         });
     }, [groupCount]);
 
-    const loadRequests = async () => {
-        try {
-            const raw = await AsyncStorage.getItem('forgot_requests');
-            const list = raw ? JSON.parse(raw) : [];
-            setRequests(list);
-        } catch (e) {}
-    };
 
     const loadHistory = async () => {
         try {
@@ -118,13 +110,12 @@ export default function NotificationScreen() {
     };
 
     useEffect(() => {
-        loadRequests();
         loadHistory();
     }, []);
 
     const onRefresh = async () => {
         setRefreshing(true);
-        await Promise.all([loadRequests(), loadHistory()]);
+        await loadHistory();
         setRefreshing(false);
     };
 
@@ -252,28 +243,6 @@ export default function NotificationScreen() {
                     </TouchableOpacity>
                 </View>
 
-                <View style={[styles.card, styles.cardSpacer]}>
-                    <Text style={styles.sectionTitle}>Forgot Password Requests</Text>
-                    {requests.length === 0 ? (
-                        <Text style={styles.emptyText}>No requests yet.</Text>
-                    ) : (
-                        <FlatList
-                            data={requests}
-                            keyExtractor={(item) => item.id}
-                            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-                            renderItem={({ item }) => (
-                                <View style={styles.requestItem}>
-                                    <Text style={styles.requestEmail}>{item.email}</Text>
-                                    <Text style={styles.requestTime}>{new Date(item.createdAt).toLocaleString()}</Text>
-                                </View>
-                            )}
-                        />
-                    )}
-                    <TouchableOpacity style={[styles.sendButton, { marginTop: 12 }]} onPress={onRefresh} activeOpacity={0.9}>
-                        <Ionicons name="refresh" size={18} color={COLORS.buttonText} style={{ marginRight: 8 }} />
-                        <Text style={styles.sendButtonText}>Refresh</Text>
-                    </TouchableOpacity>
-                </View>
 
                 <View style={[styles.card, styles.cardSpacer]}>
                     <Text style={styles.sectionTitle}>Notification History</Text>

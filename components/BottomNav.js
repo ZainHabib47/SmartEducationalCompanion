@@ -5,7 +5,7 @@ import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
 const { height } = Dimensions.get('window');
 
 const COLORS = {
-    inputBg: '#2E4D3A',
+    inputBg: '#03045e',
 };
 
 export default function BottomNav({ onPressHome, onPressNotifications, onPressChatbot, onPressSettings }) {
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.inputBg,
         width: '100%',
         position: 'absolute',
-        bottom: 10,
+        bottom: 0,
         left: 0,
         right: 0,
         borderTopLeftRadius: 25,

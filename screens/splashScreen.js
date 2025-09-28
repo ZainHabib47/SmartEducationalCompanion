@@ -5,12 +5,12 @@ const { width, height } = Dimensions.get('window');
 
 const COLORS = {
   bg: '#F5F5F5', // light gray
-  heading: '#1A2F23', // dark greenish-black
-  inputBg: '#2E4D3A', // dark green
+  heading: '#03045e', // dark blue
+  inputBg: '#03045e', // dark blue
   inputText: '#FFFFFF',
-  arrow: '#7A9B77', // light green
-  link: '#7A9B77', // soft green
-  buttonBg: '#2E4D3A',
+  arrow: '#03045e', // dark blue for icons
+  link: '#023e8a', // soft blue
+  buttonBg: '#03045e',
   buttonText: '#FFFFFF',
 };
 

@@ -7,12 +7,12 @@ const { width, height } = Dimensions.get('window');
 
 const COLORS = {
   bg: '#F5F5F5', // light gray
-  heading: '#1A2F23', // dark greenish-black
-  inputBg: '#2E4D3A', // dark green
+  heading: '#03045e', // dark blue
+  inputBg: '#03045e', // dark blue
   inputText: '#FFFFFF',
-  arrow: '#7A9B77', // light green
-  link: '#7A9B77', // soft green
-  buttonBg: '#2E4D3A',
+  arrow: '#03045e', // dark blue for icons
+  link: '#023e8a', // soft blue
+  buttonBg: '#03045e',
   buttonText: '#FFFFFF',
 };
 
@@ -24,8 +24,6 @@ export default function LoginScreen() {
   const [focusedInput, setFocusedInput] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [confirmationAnim] = useState(new Animated.Value(-100));
   const [showBanner, setShowBanner] = useState(false);
   const [bannerText, setBannerText] = useState('');
@@ -45,9 +43,18 @@ export default function LoginScreen() {
   const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
   const otpRefs = useRef(Array(5).fill(null).map(() => React.createRef()));
 
+  // Student flow state: email -> otp -> reset
+  const [studentStep, setStudentStep] = useState(null); // null | 'email' | 'otp' | 'reset'
+  const [studentEmail, setStudentEmail] = useState('');
+  const [studentOtp, setStudentOtp] = useState(['', '', '', '', '']);
+  const [studentResendTimeout, setStudentResendTimeout] = useState(60);
+  const [newStudentPassword, setNewStudentPassword] = useState('');
+  const [confirmStudentPassword, setConfirmStudentPassword] = useState('');
+  const studentOtpRefs = useRef(Array(5).fill(null).map(() => React.createRef()));
+
   const handleForgetPassword = () => {
     if (role === 'student') {
-      setShowForgotPassword(true);
+      setStudentStep('email');
     } else if (role === 'admin') {
       setAdminStep('email');
     }
@@ -85,13 +92,33 @@ export default function LoginScreen() {
     }
   };
 
-  // Resend timer
+  // Student OTP handling
+  const handleStudentOtpChange = (text, index) => {
+    const sanitized = text.replace(/\D/g, '');
+    const next = [...studentOtp];
+    next[index] = sanitized.slice(-1);
+    setStudentOtp(next);
+    if (sanitized && index < 4) {
+      const nextRef = studentOtpRefs.current[index + 1]?.current;
+      nextRef && nextRef.focus();
+    }
+  };
+
+  // Resend timer for admin
   useEffect(() => {
     if (adminStep === 'otp' && resendTimeout > 0) {
       const timer = setTimeout(() => setResendTimeout((t) => t - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [adminStep, resendTimeout]);
+
+  // Resend timer for student
+  useEffect(() => {
+    if (studentStep === 'otp' && studentResendTimeout > 0) {
+      const timer = setTimeout(() => setStudentResendTimeout((t) => t - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [studentStep, studentResendTimeout]);
 
   // Add to existing render return
   return (
@@ -180,57 +207,149 @@ export default function LoginScreen() {
       </View>
       {!dropdownOpen && role && email && password && (
         <View style={styles.bottomSection}>
-          <View style={styles.loginButton}>
+          <TouchableOpacity
+            onPress={() => {
+              if (role === 'admin') {
+                router.push('/admin');
+              } else if (role === 'student') {
+                router.push('/student');
+              }
+            }}
+            activeOpacity={0.8}
+            style={styles.loginButton}
+          >
             <Text style={styles.loginText}>LOG-IN</Text>
-            <TouchableOpacity
-              onPress={() => {
-                if (role === 'admin') {
-                  router.push('/admin');
-                } else if (role === 'student') {
-                  router.push('/student');
-                }
-              }}
-              activeOpacity={0.8}
-              style={styles.loginIconCircle}
-            >
+            <View style={styles.loginIconCircle}>
               <Ionicons name="arrow-forward" size={22} color={COLORS.arrow} />
-            </TouchableOpacity>
-          </View>
+            </View>
+          </TouchableOpacity>
         </View>
       )}
-      {/* Student forgot password modal (email only, then banner) */}
-      {showForgotPassword && (
-        <Modal visible={showForgotPassword} transparent animationType="slide">
+      {/* Student forgot password flow: Email -> OTP -> Reset Password */}
+      {studentStep && (
+        <Modal visible transparent animationType="slide">
           <View style={styles.modalContainer}>
-            <Text style={styles.modalHeading}>Forgot Password? Don't Worry</Text>
-            <View style={styles.modalInputWrapper}>
-              <TextInput
-                style={styles.modalInput}
-                placeholder="Enter Your Email"
-                placeholderTextColor={COLORS.inputText}
-                value={forgotPasswordEmail}
-                onChangeText={setForgotPasswordEmail}
-                keyboardType="email-address"
-              />
-            </View>
-            <View style={styles.modalButtonsContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowForgotPassword(false)}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, !forgotPasswordEmail && { opacity: 0.5 }]}
-                disabled={!forgotPasswordEmail}
-                onPress={() => {
-                  setShowForgotPassword(false);
-                  showConfirmationBanner('Admin is informed successfully.');
-                }}
-              >
-                <Text style={styles.modalButtonText}>Confirm</Text>
-              </TouchableOpacity>
-            </View>
+            {studentStep === 'email' && (
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <Text style={styles.modalHeading}>Forgot Password (Student)</Text>
+                <View style={styles.modalInputWrapper}>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Enter Your Email"
+                    placeholderTextColor={COLORS.inputText}
+                    value={studentEmail}
+                    onChangeText={setStudentEmail}
+                    keyboardType="email-address"
+                  />
+                </View>
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setStudentStep(null)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, !studentEmail && { opacity: 0.5 }]}
+                    disabled={!studentEmail}
+                    onPress={() => {
+                      setStudentResendTimeout(60);
+                      setStudentOtp(['', '', '', '', '']);
+                      setStudentStep('otp');
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Next</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {studentStep === 'otp' && (
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <Text style={styles.modalHeading}>Enter 5-digit OTP</Text>
+                <View style={styles.otpContainer}>
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <TextInput
+                      key={i}
+                      ref={studentOtpRefs.current[i]}
+                      style={styles.otpInput}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      value={studentOtp[i]}
+                      onChangeText={(t) => handleStudentOtpChange(t, i)}
+                    />
+                  ))}
+                </View>
+                <TouchableOpacity 
+                  style={[styles.resendButton, studentResendTimeout > 0 && styles.disabledButton]}
+                  disabled={studentResendTimeout > 0}
+                  onPress={() => setStudentResendTimeout(60)}
+                >
+                  <Text style={styles.resendText}>
+                    {studentResendTimeout > 0 ? `Resend OTP in ${studentResendTimeout}s` : 'Resend OTP'}
+                  </Text>
+                </TouchableOpacity>
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setStudentStep(null)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, studentOtp.join('').length !== 5 && { opacity: 0.5 }]}
+                    disabled={studentOtp.join('').length !== 5}
+                    onPress={() => setStudentStep('reset')}
+                  >
+                    <Text style={styles.modalButtonText}>Confirm</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {studentStep === 'reset' && (
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <Text style={styles.modalHeading}>Set New Password</Text>
+                <View style={styles.modalInputWrapper}>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="New Password"
+                    placeholderTextColor={COLORS.inputText}
+                    secureTextEntry
+                    value={newStudentPassword}
+                    onChangeText={setNewStudentPassword}
+                  />
+                </View>
+                <View style={styles.modalInputWrapper}>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Confirm New Password"
+                    placeholderTextColor={COLORS.inputText}
+                    secureTextEntry
+                    value={confirmStudentPassword}
+                    onChangeText={setConfirmStudentPassword}
+                  />
+                </View>
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setStudentStep(null)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, (!newStudentPassword || newStudentPassword !== confirmStudentPassword) && { opacity: 0.5 }]}
+                    disabled={!newStudentPassword || newStudentPassword !== confirmStudentPassword}
+                    onPress={() => {
+                      setStudentStep(null);
+                      showConfirmationBanner('PASSWORD CHANGED SUCCESSFULLY');
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Confirm</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
         </Modal>
       )}

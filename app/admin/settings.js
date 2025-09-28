@@ -6,10 +6,10 @@ import BottomNav from '../../components/BottomNav';
 
 const COLORS = {
     bg: '#F5F5F5',
-    heading: '#1A2F23',
-    inputBg: '#2E4D3A',
+    heading: '#03045e',
+    inputBg: '#03045e',
     inputText: '#FFFFFF',
-    buttonBg: '#2E4D3A',
+    buttonBg: '#03045e',
     buttonText: '#FFFFFF',
     border: '#DDE8D8',
 };
