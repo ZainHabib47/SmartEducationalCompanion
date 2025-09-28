@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Dimensions, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import UploadConfirmationModal from '../components/UploadConfirmationModal';
+import TopicInputModal from '../components/TopicInputModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -107,6 +108,8 @@ export default function AttendanceUploadScreen() {
 	const [students, setStudents] = useState(sampleStudents);
 	const [attendanceStatus, setAttendanceStatus] = useState({});
 	const [showConfirmation, setShowConfirmation] = useState(false);
+	const [showTopicModal, setShowTopicModal] = useState(false);
+	const [todayTopics, setTodayTopics] = useState({ physicsTopic: "", mathsTopic: "", chemistryTopic: "" });
 
 	// Initialize attendance status for all students
 	useEffect(() => {
@@ -128,6 +131,15 @@ export default function AttendanceUploadScreen() {
 		router.back();
 	};
 
+const handleTopicSave = (topics) => {
+		setTodayTopics(topics);
+		// Here you would send data to MongoDB
+		console.log('Attendance data:', attendanceStatus);
+		console.log('Today\'s Topics:', topics);
+		// Show confirmation modal
+		setShowConfirmation(true);
+	};
+
 	const handleUploadAttendance = () => {
 		const unmarkedStudents = students.filter(student => attendanceStatus[student.id] === null);
 		
@@ -140,26 +152,13 @@ export default function AttendanceUploadScreen() {
 			return;
 		}
 
-		Alert.alert(
-			'Upload Attendance',
-			'Are you sure you want to upload the attendance?',
-			[
-				{ text: 'Cancel', style: 'cancel' },
-				{
-					text: 'Upload',
-					onPress: () => {
-						// Here you would send data to MongoDB
-						console.log('Attendance data:', attendanceStatus);
-						// Show confirmation modal
-						setShowConfirmation(true);
-					}
-				}
-			]
-		);
+		setShowTopicModal(true);
 	};
 
 	const handleConfirmationClose = () => {
 		setShowConfirmation(false);
+		setTodayTopics({ physicsTopic: '', mathsTopic: '', chemistryTopic: '' }); // Reset topics
+		setAttendanceStatus({}); // Reset attendance status
 		router.back();
 	};
 
@@ -260,12 +259,19 @@ export default function AttendanceUploadScreen() {
 				))}
 			</ScrollView>
 
+			{/* Topic Input Modal */}
+			<TopicInputModal
+				visible={showTopicModal}
+				onClose={() => setShowTopicModal(false)}
+				onSave={handleTopicSave}
+			/>
+
 			{/* Confirmation Modal */}
 			<UploadConfirmationModal
 				visible={showConfirmation}
 				onClose={handleConfirmationClose}
-				title="Attendance Uploaded Successfully"
-				message="Student attendance has been recorded and uploaded successfully!"
+				title="Attendance & Topics Uploaded Successfully"
+				message="Student attendance and today's topics (Physics, Maths, Chemistry) have been recorded and uploaded successfully!"
 				operationType="attendance"
 			/>
 		</View>
@@ -446,5 +452,3 @@ const styles = StyleSheet.create({
 		fontWeight: '600',
 	},
 });
-
-

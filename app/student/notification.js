@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, FlatList, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import BottomNav from '../../components/BottomNav';
+import CustomHeader from '../../components/CustomHeader';
 
 const { width, height } = Dimensions.get('window');
 
@@ -158,18 +159,7 @@ export default function StudentNotificationScreen() {
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={COLORS.inputBg} />
             
-            {/* Header with Back Button */}
-            <View style={styles.header}>
-                <TouchableOpacity 
-                    style={styles.backButton}
-                    onPress={() => router.back()}
-                    activeOpacity={0.7}
-                >
-                    <Ionicons name="arrow-back" size={24} color={COLORS.inputText} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Notifications</Text>
-                <View style={styles.headerSpacer} />
-            </View>
+            <CustomHeader title="Notifications" />
 
             {/* Scrollable Notifications List */}
             <View style={styles.contentContainer}>

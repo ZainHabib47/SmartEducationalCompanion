@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import BottomNav from '../../components/BottomNav';
+import CustomHeader from '../../components/CustomHeader';
 
 const COLORS = {
     bg: '#F5F5F5',
@@ -37,18 +38,7 @@ export default function StudentTimetableScreen() {
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={COLORS.inputBg} />
             
-            {/* Header with Back Button */}
-            <View style={styles.header}>
-                <TouchableOpacity 
-                    style={styles.backButton}
-                    onPress={() => router.back()}
-                    activeOpacity={0.7}
-                >
-                    <Ionicons name="arrow-back" size={24} color={COLORS.inputText} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Timetable</Text>
-                <View style={styles.headerSpacer} />
-            </View>
+            <CustomHeader title="Timetable" />
 
             {/* Content */}
             <View style={styles.content}>

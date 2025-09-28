@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import BottomNav from '../../components/BottomNav';
+import CustomHeader from '../../components/CustomHeader';
 
 const COLORS = {
     bg: '#F5F5F5',
@@ -54,18 +55,7 @@ export default function StudentSettingsScreen() {
         <KeyboardAvoidingView style={{ flex: 1, backgroundColor: COLORS.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <StatusBar barStyle="light-content" backgroundColor={COLORS.inputBg} />
             
-            {/* Header with Back Button */}
-            <View style={styles.header}>
-                <TouchableOpacity 
-                    style={styles.backButton}
-                    onPress={() => router.back()}
-                    activeOpacity={0.7}
-                >
-                    <Ionicons name="arrow-back" size={24} color={COLORS.inputText} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Settings</Text>
-                <View style={styles.headerSpacer} />
-            </View>
+            <CustomHeader title="Settings" />
 
             <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
                 {/* Profile Information Section */}

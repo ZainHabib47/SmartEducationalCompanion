@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import BottomNav from '../../components/BottomNav';
+import CustomHeader from '../../components/CustomHeader';
 
 const COLORS = {
     bg: '#F5F5F5',
@@ -36,14 +37,7 @@ export default function StudentAttendanceScreen() {
 
     return (
         <View style={styles.container}>
-            {/* Header with Back Button - matching admin attendance style */}
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()} activeOpacity={0.8}>
-                <Ionicons name="arrow-back" size={24} color={COLORS.inputBg} />
-                <Text style={styles.backText}>Back</Text>
-            </TouchableOpacity>
-
-            {/* Title - matching admin attendance style */}
-            <Text style={styles.title}>Attendance</Text>
+            <CustomHeader title="Attendance" />
 
             <View style={styles.content}>
                 <View style={styles.placeholder}>
@@ -67,38 +61,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.bg,
-        padding: 20,
-    },
-    backButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        marginTop: Platform.select({ ios: 50, android: 20 }),
-        marginBottom: 10,
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: COLORS.inputBg,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-    },
-    backText: {
-        fontFamily: 'Outfit',
-        fontSize: 16,
-        color: COLORS.inputBg,
-        marginLeft: 6,
-    },
-    title: {
-        fontFamily: 'Griffter',
-        fontSize: 28,
-        color: COLORS.inputBg,
-        textAlign: 'center',
-        marginBottom: 20,
     },
     content: {
         flex: 1,
