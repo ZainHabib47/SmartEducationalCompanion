@@ -216,6 +216,58 @@ export default function StudentsListScreen() {
                         <Text style={styles.detailLabel}>Registration No:</Text>
                         <Text style={styles.detailValue}>{student.registrationNumber}</Text>
                     </View>
+
+                    {/* Quiz History Box */}
+                    <View style={styles.sectionBox}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionHeaderText}>Quiz History</Text>
+                        </View>
+                        <View style={styles.sectionBody}>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                <View style={{ minWidth: 720 }}>
+                                    <View style={styles.tableHeaderRow}>
+                                        <Text style={[styles.tableHeaderCell, { flex: 1.2 }]}>Date</Text>
+                                        <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Time</Text>
+                                        <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Marks (10)</Text>
+                                        <Text style={[styles.tableHeaderCell, { flex: 1.2 }]}>Remarks</Text>
+                                        <Text style={[styles.tableHeaderCell, { flex: 1.6 }]}>Topic</Text>
+                                        <Text style={[styles.tableHeaderCell, { flex: 1.2 }]}>Difficulty</Text>
+                                    </View>
+                                    <ScrollView style={{ maxHeight: 220 }}>
+                                        {[1,2,3].map((i) => (
+                                            <View key={i} style={[styles.tableRow, i % 2 === 0 && styles.tableRowAlt]}>
+                                                <Text style={[styles.tableCell, { flex: 1.2 }]}>2025-09-2{i}</Text>
+                                                <Text style={[styles.tableCell, { flex: 1 }]}>10:{i}0</Text>
+                                                <Text style={[styles.tableCell, { flex: 1 }]}> {7+i}/10</Text>
+                                                <Text style={[styles.tableCell, { flex: 1.2 }]}>{i>2? 'Excellent':'Good'}</Text>
+                                                <Text style={[styles.tableCell, { flex: 1.6 }]}>Sample Topic {i}</Text>
+                                                <Text style={[styles.tableCell, { flex: 1.2 }]}>{i%3===0?'Hard': i%2===0?'Medium':'Easy'}</Text>
+                                            </View>
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            </ScrollView>
+                        </View>
+                    </View>
+
+                    {/* Assign Achievements (10 boxes) */}
+                    <View style={styles.sectionBox}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionHeaderText}>Assign Achievements (10)</Text>
+                        </View>
+                        <View style={styles.achievementsGrid}>
+                            {['Top Performer','Consistent Learner','Quiz Champion','Attendance Star','Maths Wizard','Science Explorer','Chemistry Ace','Physics Pro','Problem Solver','Team Player'].map((title, idx) => (
+                                <View key={idx} style={styles.achievementCard}>
+                                    <View style={styles.achievementInner}>
+                                        <View style={styles.achievementIconWrap}>
+                                            <Ionicons name="trophy" size={22} color={COLORS.inputBg} />
+                                        </View>
+                                        <Text style={styles.achievementText}>{title}</Text>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
                     
                     <View style={styles.actionButtons}>
                         <TouchableOpacity 
@@ -490,6 +542,102 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         borderTopWidth: 1,
         borderTopColor: '#E0E0E0',
+    },
+    sectionBox: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        overflow: 'hidden',
+        borderWidth: 2,
+        borderColor: COLORS.inputBg,
+        marginTop: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    sectionHeader: {
+        height: 50,
+        backgroundColor: COLORS.link,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    sectionHeaderText: {
+        fontFamily: 'Griffter',
+        fontSize: 18,
+        color: '#FFFFFF',
+    },
+    sectionBody: {
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+    },
+    tableHeaderRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+        paddingBottom: 10,
+        marginBottom: 10,
+    },
+    tableHeaderCell: {
+        fontFamily: 'Outfit',
+        fontSize: 13,
+        color: COLORS.heading,
+        fontWeight: '600',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f2f2f2',
+    },
+    tableRowAlt: {
+        backgroundColor: '#FAFAFA',
+    },
+    tableCell: {
+        fontFamily: 'Outfit',
+        fontSize: 13,
+        color: COLORS.heading,
+    },
+    achievementsGrid: {
+        padding: 12,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        gap: 8,
+    },
+    achievementCard: {
+        width: '31.5%',
+        aspectRatio: 1,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: COLORS.inputBg,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 2,
+        marginBottom: 8,
+    },
+    achievementInner: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 8,
+    },
+    achievementIconWrap: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#F0F8F0',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 6,
+    },
+    achievementText: {
+        fontFamily: 'Outfit',
+        fontSize: 12,
+        color: COLORS.inputBg,
     },
     detailRow: {
         flexDirection: 'row',

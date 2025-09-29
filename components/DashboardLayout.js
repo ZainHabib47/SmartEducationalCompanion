@@ -26,6 +26,7 @@ export default function DashboardLayout({
 	onPressCard,
 	gridItems = [], // [{ key, icon, label }]
 	bottomIcons = [], // [{ key, icon, onPress }]
+	footerButton, // optional: { icon, label, onPress }
 }) {
 	const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
 	const slideAnim = useRef(new Animated.Value(-100)).current;
@@ -227,6 +228,18 @@ export default function DashboardLayout({
 						</TouchableOpacity>
 					))}
 				</View>
+				{footerButton && (
+					<TouchableOpacity
+						style={styles.fullWidthButton}
+						activeOpacity={0.85}
+						onPress={footerButton.onPress}
+					>
+						<View style={styles.fullWidthButtonIconWrap}>
+							<Ionicons name={footerButton.icon} size={28} color={COLORS.inputBg} />
+						</View>
+						<Text style={styles.fullWidthButtonText}>{footerButton.label}</Text>
+					</TouchableOpacity>
+				)}
 			</View>
 			<Animated.View 
 				style={[
@@ -462,6 +475,37 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.08,
 		shadowRadius: 4,
 		elevation: 4,
+	},
+	fullWidthButton: {
+		width: '100%',
+		backgroundColor: '#fff',
+		borderWidth: 2,
+		borderColor: COLORS.inputBg,
+		borderRadius: 16,
+		height: 60,
+		marginTop: 10,
+		alignItems: 'center',
+		justifyContent: 'center',
+		flexDirection: 'row',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.08,
+		shadowRadius: 4,
+		elevation: 4,
+	},
+	fullWidthButtonIconWrap: {
+		width: 45,
+		height: 45,
+		borderRadius: 22.5,
+		backgroundColor: '#F0F8F0',
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginRight: 10,
+	},
+	fullWidthButtonText: {
+		fontFamily: 'Outfit',
+		fontSize: 15,
+		color: COLORS.inputBg,
 	},
 	cardIconContainer: {
 		width: 45,

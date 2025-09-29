@@ -94,6 +94,7 @@ export default function StudentDashboard() {
                 { key: 'chat', icon: 'chatbubbles', onPress: () => handleBottomPress('chat') },
                 { key: 'settings', icon: 'settings', onPress: () => handleBottomPress('settings') },
             ]}
+            footerButton={{ icon: 'trophy', label: 'Achemivment', onPress: () => router.push('/student/achievements') }}
         />
     );
 }

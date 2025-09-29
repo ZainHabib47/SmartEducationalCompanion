@@ -46,6 +46,11 @@ export default function StudentSettingsScreen() {
         console.log('Saving profile...');
     };
 
+    const handleLogout = () => {
+        // TODO: clear auth state and navigate
+        router.replace('/');
+    };
+
     const handleChangePassword = () => {
         // TODO: Implement password change logic
         console.log('Changing password...');
@@ -145,6 +150,11 @@ export default function StudentSettingsScreen() {
                     </TouchableOpacity>
                 </View>
 
+                <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.9}>
+                         <Ionicons name="log-out" size={18} color={COLORS.buttonBg} style={{ marginRight: 8 }} />
+                         <Text style={styles.logoutText}>Logout</Text>
+                </TouchableOpacity>
+
                 <View style={{ height: 100 }} />
             </ScrollView>
 
@@ -176,6 +186,17 @@ const styles = StyleSheet.create({
     backButton: {
         padding: 8,
         marginRight: 10,
+    },
+    logoutBtn: {
+        marginTop: 8,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#FFFFFF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        borderWidth: 2,
+        borderColor: COLORS.inputBg,
     },
     headerTitle: {
         fontFamily: 'Outfit',

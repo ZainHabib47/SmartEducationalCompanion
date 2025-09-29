@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import BottomNav from '../../components/BottomNav';
 import CustomHeader from '../../components/CustomHeader';
 
@@ -12,7 +12,11 @@ const COLORS = {
     inputText: '#FFFFFF',
     buttonBg: '#03045e',
     buttonText: '#FFFFFF',
+    link: '#023e8a',
 };
+
+const { height } = Dimensions.get('window');
+const BOTTOM_NAV_HEIGHT = height * 0.16;
 
 export default function StudentCurriculumScreen() {
     const router = useRouter();
@@ -40,13 +44,68 @@ export default function StudentCurriculumScreen() {
             
             <CustomHeader title="Curriculum" />
 
-            <View style={styles.content}>
-                <View style={styles.placeholder}>
-                    <Ionicons name="book" size={64} color={COLORS.link} />
-                    <Text style={styles.placeholderTitle}>Curriculum</Text>
-                    <Text style={styles.placeholderText}>Your course curriculum will appear here</Text>
+            <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+                {/* Physics */}
+                <View style={styles.card}>
+                    <View style={styles.cardImageContainer}>
+                        <Image
+                            source={require('../../assets/images/lightGreenLogo.png')}
+                            resizeMode="contain"
+                            style={styles.cardImage}
+                        />
+                    </View>
+                    <View style={styles.cardFooterRow}>
+                        <Text style={styles.footerDate}>29 Sep 2025</Text>
+                        <Text style={styles.subjectTitle}>Physics</Text>
+                        <Text style={styles.footerTime}>10:30 AM</Text>
+                    </View>
                 </View>
-            </View>
+                <TouchableOpacity style={styles.downloadButton} activeOpacity={0.85}>
+                    <Ionicons name="download" size={20} color={COLORS.buttonText} />
+                    <Text style={styles.downloadButtonText}>Download PDF</Text>
+                </TouchableOpacity>
+
+                {/* Chemistry */}
+                <View style={styles.card}>
+                    <View style={styles.cardImageContainer}>
+                        <Image
+                            source={require('../../assets/images/lightGreenLogo.png')}
+                            resizeMode="contain"
+                            style={styles.cardImage}
+                        />
+                    </View>
+                    <View style={styles.cardFooterRow}>
+                        <Text style={styles.footerDate}>29 Sep 2025</Text>
+                        <Text style={styles.subjectTitle}>Chemistry</Text>
+                        <Text style={styles.footerTime}>10:30 AM</Text>
+                    </View>
+                </View>
+                <TouchableOpacity style={styles.downloadButton} activeOpacity={0.85}>
+                    <Ionicons name="download" size={20} color={COLORS.buttonText} />
+                    <Text style={styles.downloadButtonText}>Download PDF</Text>
+                </TouchableOpacity>
+
+                {/* Maths */}
+                <View style={styles.card}>
+                    <View style={styles.cardImageContainer}>
+                        <Image
+                            source={require('../../assets/images/lightGreenLogo.png')}
+                            resizeMode="contain"
+                            style={styles.cardImage}
+                        />
+                    </View>
+                    <View style={styles.cardFooterRow}>
+                        <Text style={styles.footerDate}>29 Sep 2025</Text>
+                        <Text style={styles.subjectTitle}>Maths</Text>
+                        <Text style={styles.footerTime}>10:30 AM</Text>
+                    </View>
+                </View>
+                <TouchableOpacity style={styles.downloadButton} activeOpacity={0.85}>
+                    <Ionicons name="download" size={20} color={COLORS.buttonText} />
+                    <Text style={styles.downloadButtonText}>Download PDF</Text>
+                </TouchableOpacity>
+                <View style={{ height: 24 }} />
+            </ScrollView>
 
             <BottomNav
                 onPressHome={() => handleBottomPress('home')}
@@ -92,25 +151,75 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         padding: 20,
     },
-    placeholder: {
+    contentContainer: {
+        paddingBottom: 20 + BOTTOM_NAV_HEIGHT,
+    },
+    card: {
+        width: '100%',
+        aspectRatio: 16 / 9,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#e6e6e6',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3,
+        marginBottom: 12,
+    },
+    cardImageContainer: {
+        flex: 0.85,
+        justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 12,
+        backgroundColor: '#f8fafc',
     },
-    placeholderTitle: {
+    cardImage: {
+        width: '100%',
+        height: '100%',
+    },
+    cardFooterRow: {
+        flex: 0,
+        backgroundColor: COLORS.link,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 3,
+    },
+    subjectTitle: {
+        fontFamily: 'Griffter',
+        fontSize: 18,
+        color: '#FFFFFF',
+    },
+    footerDate: {
         fontFamily: 'Outfit',
-        fontSize: 24,
-        fontWeight: '600',
-        color: COLORS.heading,
-        marginTop: 16,
-        marginBottom: 8,
+        fontSize: 14,
+        color: '#FFFFFF',
     },
-    placeholderText: {
+    footerTime: {
+        fontFamily: 'Outfit',
+        fontSize: 14,
+        color: '#FFFFFF',
+    },
+    downloadButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.buttonBg,
+        paddingVertical: 12,
+        borderRadius: 12,
+        gap: 8,
+        marginBottom: 16,
+    },
+    downloadButtonText: {
         fontFamily: 'Outfit',
         fontSize: 16,
-        color: COLORS.link,
-        textAlign: 'center',
+        color: COLORS.buttonText,
+        marginLeft: 8,
     },
 });

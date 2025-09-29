@@ -6,6 +6,7 @@ import {
     Animated,
     Dimensions,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TextInput,
@@ -23,6 +24,19 @@ export default function EditStudentScreen() {
     const [student, setStudent] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [selectedAchievements, setSelectedAchievements] = useState(new Set());
+    const ACHIEVEMENT_TITLES = [
+        'Top Performer',
+        'Consistent Learner',
+        'Quiz Champion',
+        'Attendance Star',
+        'Maths Wizard',
+        'Science Explorer',
+        'Chemistry Ace',
+        'Physics Pro',
+        'Problem Solver',
+        'Team Player',
+    ];
     
     const slideAnim = useRef(new Animated.Value(-100)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -32,6 +46,11 @@ export default function EditStudentScreen() {
             try {
                 const parsedStudent = JSON.parse(studentData);
                 setStudent(parsedStudent);
+                // If backend provides assigned achievements, initialize here
+                // Example: parsedStudent.assignedAchievements = [1,3,5]
+                if (parsedStudent.assignedAchievements && Array.isArray(parsedStudent.assignedAchievements)) {
+                    setSelectedAchievements(new Set(parsedStudent.assignedAchievements));
+                }
             } catch (error) {
                 console.error('Error parsing student data:', error);
                 Alert.alert('Error', 'Invalid student data');
@@ -80,6 +99,12 @@ export default function EditStudentScreen() {
             Alert.alert('Error', 'Please enter phone number in format: +92-XXX-XXXXXXX');
             return;
         }
+
+        // Persist assigned achievements to local student object (stub for backend)
+        setStudent(prev => ({
+            ...prev,
+            assignedAchievements: Array.from(selectedAchievements),
+        }));
 
         setIsEditing(false);
         setShowConfirmationModal(true);
@@ -259,33 +284,7 @@ export default function EditStudentScreen() {
                         />
                     </View>
 
-                    {/* Achievements (Read-only) */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.inputLabel}>Achievements</Text>
-                        <TextInput
-                            style={[styles.input, styles.inputDisabled]}
-                            value={student.achievements}
-                            editable={false}
-                            placeholder="Achievements are managed by admin"
-                            placeholderTextColor={COLORS.link}
-                            multiline
-                            numberOfLines={3}
-                        />
-                        <Text style={styles.readOnlyNote}>* Achievements cannot be edited</Text>
-                    </View>
-
-                    {/* Rank (Read-only) */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.inputLabel}>Rank</Text>
-                        <TextInput
-                            style={[styles.input, styles.inputDisabled]}
-                            value={student.rank}
-                            editable={false}
-                            placeholder="Rank is managed by admin"
-                            placeholderTextColor={COLORS.link}
-                        />
-                        <Text style={styles.readOnlyNote}>* Rank cannot be edited</Text>
-                    </View>
+                    {/* Removed non-clickable achievements section above registration number */}
 
                     {/* Registration Number (Read-only) */}
                     <View style={styles.inputGroup}>
@@ -298,6 +297,43 @@ export default function EditStudentScreen() {
                             placeholderTextColor={COLORS.link}
                         />
                         <Text style={styles.readOnlyNote}>* Registration number cannot be edited</Text>
+                    </View>
+
+                    {/* Assign Achievements (10 boxes) */}
+                    <View style={[styles.sectionBox, { marginTop: 20, marginHorizontal: 6 }]}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionHeaderText}>Assign Achievements</Text>
+                        </View>
+                        <View style={styles.achievementsGrid}>
+                            {Array.from({ length: 10 }).map((_, idx) => {
+                                const id = idx + 1;
+                                const title = ACHIEVEMENT_TITLES[idx % ACHIEVEMENT_TITLES.length];
+                                const isSelected = selectedAchievements.has(id);
+                                return (
+                                    <TouchableOpacity
+                                        key={id}
+                                        style={[styles.achievementCard, isSelected && styles.achievementCardSelected]}
+                                        activeOpacity={0.85}
+                                        onPress={() => {
+                                            setSelectedAchievements(prev => {
+                                                const next = new Set(prev);
+                                                if (next.has(id)) next.delete(id); else next.add(id);
+                                                return next;
+                                            });
+                                        }}
+                                    >
+                                        <View style={styles.achievementInner}>
+                                            <View style={[styles.achievementIconWrap, isSelected && styles.achievementIconWrapSelected]}>
+                                                <Ionicons name={isSelected ? 'checkmark' : 'trophy'} size={22} color={isSelected ? '#fff' : COLORS.inputBg} />
+                                            </View>
+                                            <Text style={[styles.achievementText, isSelected && styles.achievementTextSelected]} numberOfLines={1}>
+                                                {title}
+                                            </Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
                     </View>
 
                     {/* Action Buttons */}
@@ -354,7 +390,7 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: COLORS.inputBg,
         paddingHorizontal: 20,
-        paddingTop: Math.max(20, height * 0.03),
+        paddingTop: Math.max(20, (StatusBar?.currentHeight || height * 0.03) + 10),
         paddingBottom: 20,
         flexDirection: 'row',
         alignItems: 'center',
@@ -396,7 +432,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     formContent: {
-        paddingBottom: 20,
+        paddingBottom: 120,
     },
     formCard: {
         backgroundColor: '#fff',
@@ -443,6 +479,79 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         marginTop: 5,
     },
+    sectionBox: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        overflow: 'hidden',
+        borderWidth: 2,
+        borderColor: COLORS.inputBg,
+        marginTop: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    sectionHeader: {
+        height: 50,
+        backgroundColor: COLORS.link,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    sectionHeaderText: {
+        fontFamily: 'Griffter',
+        fontSize: 18,
+        color: '#FFFFFF',
+    },
+    achievementsGrid: {
+        padding: 12,
+        gap: 10,
+    },
+    achievementCard: {
+        width: '100%',
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: COLORS.inputBg,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+    achievementCardSelected: {
+        backgroundColor: '#E8F5E9',
+        borderColor: '#4CAF50',
+    },
+    achievementInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+    },
+    achievementIconWrap: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#F0F8F0',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    achievementIconWrapSelected: {
+        backgroundColor: '#4CAF50',
+    },
+    achievementText: {
+        fontFamily: 'Outfit',
+        fontSize: 14,
+        color: COLORS.inputBg,
+        flexShrink: 1,
+    },
+    achievementTextSelected: {
+        color: '#2E7D32',
+        fontWeight: '700',
+    },
     actionButtons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -450,6 +559,7 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         borderTopWidth: 1,
         borderTopColor: '#E0E0E0',
+        marginBottom: 10,
     },
     cancelEditButton: {
         backgroundColor: '#E0E0E0',

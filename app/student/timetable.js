@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import BottomNav from '../../components/BottomNav';
 import CustomHeader from '../../components/CustomHeader';
 
@@ -37,17 +37,34 @@ export default function StudentTimetableScreen() {
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={COLORS.inputBg} />
-            
             <CustomHeader title="Timetable" />
 
             {/* Content */}
-            <View style={styles.content}>
-                <View style={styles.placeholder}>
-                    <Ionicons name="calendar" size={64} color={COLORS.link} />
-                    <Text style={styles.placeholderTitle}>Timetable</Text>
-                    <Text style={styles.placeholderText}>Your class schedule will appear here</Text>
+            <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+                {/* Timetable card */}
+                <View style={styles.card}>
+                    <View style={styles.cardImageContainer}>
+                        <Image
+                            source={require('../../assets/images/lightGreenLogo.png')}
+                            resizeMode="contain"
+                            style={styles.cardImage}
+                        />
+                    </View>
+                    <View style={styles.cardFooter}>
+                        <Text style={styles.footerDate}>29 Sep 2025</Text>
+                        <Text style={styles.footerTitle}>Timetable</Text>
+                        <Text style={styles.footerTime}>10:30 AM</Text>
+                    </View>
                 </View>
-            </View>
+
+                {/* Download button */}
+                <TouchableOpacity style={styles.downloadButton} activeOpacity={0.85}>
+                    <Ionicons name="download" size={20} color={COLORS.buttonText} />
+                    <Text style={styles.downloadButtonText}>Download Timetable</Text>
+                </TouchableOpacity>
+
+                {/* Removed Student Dashboard button as requested */}
+            </ScrollView>
 
             {/* Bottom Navigation */}
             <BottomNav
@@ -94,25 +111,76 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         padding: 20,
     },
-    placeholder: {
+    contentContainer: {
+        paddingBottom: 20,
+    },
+    card: {
+        width: '100%',
+        aspectRatio: 16 / 9,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#e6e6e6',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3,
+        marginBottom: 16,
+    },
+    cardImageContainer: {
+        flex: 0.85,
+        justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 12,
+        backgroundColor: '#f8fafc',
     },
-    placeholderTitle: {
+    cardImage: {
+        width: '100%',
+        height: '100%',
+    },
+    cardFooter: {
+        flex: 0.10,
+        backgroundColor: COLORS.link,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+    },
+    footerDate: {
         fontFamily: 'Outfit',
-        fontSize: 24,
-        fontWeight: '600',
-        color: COLORS.heading,
-        marginTop: 16,
-        marginBottom: 8,
+        fontSize: 14,
+        color: '#FFFFFF',
     },
-    placeholderText: {
+    footerTitle: {
+        fontFamily: 'Griffter',
+        fontSize: 18,
+        color: '#FFFFFF',
+    },
+    footerTime: {
+        fontFamily: 'Outfit',
+        fontSize: 14,
+        color: '#FFFFFF',
+    },
+    downloadButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.buttonBg,
+        paddingVertical: 12,
+        borderRadius: 12,
+        gap: 8,
+        marginBottom: 12,
+    },
+    downloadButtonText: {
         fontFamily: 'Outfit',
         fontSize: 16,
-        color: COLORS.link,
-        textAlign: 'center',
+        color: COLORS.buttonText,
+        marginLeft: 8,
     },
+    // removed styles for dashboardButton and dashboardButtonText
 });
