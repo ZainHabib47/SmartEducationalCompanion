@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import BottomNav from '../../components/BottomNav';
 import CustomHeader from '../../components/CustomHeader';
+import UploadConfirmationModal from '../../components/UploadConfirmationModal';
 
 const COLORS = {
     bg: '#F5F5F5',
@@ -24,6 +25,19 @@ export default function StudentSettingsScreen() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
+    // Confirmation modal state
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalMessage, setModalMessage] = useState('');
+    const [modalVariant, setModalVariant] = useState('success'); // 'success' | 'error'
+
+    const showModal = (title, message, variant = 'success') => {
+        setModalTitle(title);
+        setModalMessage(message);
+        setModalVariant(variant);
+        setModalVisible(true);
+    };
+
     const handleBottomPress = (key) => {
         switch (key) {
             case 'home':
@@ -42,8 +56,8 @@ export default function StudentSettingsScreen() {
     };
 
     const handleSaveProfile = () => {
-        // TODO: Implement profile save logic
-        console.log('Saving profile...');
+        // In real app: call API then show success/error based on response
+        showModal('Profile Updated', 'Your profile information was saved successfully.', 'success');
     };
 
     const handleLogout = () => {
@@ -52,8 +66,25 @@ export default function StudentSettingsScreen() {
     };
 
     const handleChangePassword = () => {
-        // TODO: Implement password change logic
-        console.log('Changing password...');
+        // Basic validations; replace with API result handling
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            showModal('Missing Information', 'Please fill all password fields.', 'error');
+            return;
+        }
+        if (newPassword.length < 6) {
+            showModal('Weak Password', 'New password must be at least 6 characters.', 'error');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showModal('Password Mismatch', 'New password and confirm password do not match.', 'error');
+            return;
+        }
+
+        // Simulate success
+        showModal('Password Changed', 'Your password has been updated successfully.', 'success');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
     };
 
     return (
@@ -70,10 +101,9 @@ export default function StudentSettingsScreen() {
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Full Name</Text>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, styles.disabledInput]}
                             value={name}
-                            onChangeText={setName}
-                            placeholder="Enter your full name"
+                            editable={false}
                             placeholderTextColor={COLORS.inputText}
                         />
                     </View>
@@ -164,6 +194,15 @@ export default function StudentSettingsScreen() {
                 onPressNotifications={() => handleBottomPress('bell')}
                 onPressChatbot={() => handleBottomPress('chat')}
                 onPressSettings={() => handleBottomPress('settings')}
+            />
+
+            {/* Confirmation / Error Modal */}
+            <UploadConfirmationModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                title={modalTitle}
+                message={modalMessage}
+                variant={modalVariant}
             />
         </KeyboardAvoidingView>
     );

@@ -16,7 +16,7 @@ const COLORS = {
     link: '#023e8a',
 };
 
-export default function ChatbotScreen() {
+export default function ChatbotScreen({ base = 'admin' }) {
     const router = useRouter();
     const [messages, setMessages] = useState([
         { id: '1', role: 'assistant', text: 'Hi! I am AppAssistance. Ask me anything about your classes.' },
@@ -79,10 +79,10 @@ export default function ChatbotScreen() {
     }, [messages.length, keyboardOffset, composerHeight]);
 
     const go = (key) => {
-        if (key === 'home') router.push('/admin');
-        if (key === 'bell') router.push('/admin/notification');
-        if (key === 'chatbot') router.push('/admin/chatbot');
-        if (key === 'settings') router.push('/admin/settings');
+        if (key === 'home') router.push(`/${base}`);
+        if (key === 'bell') router.push(`/${base}/notification`);
+        if (key === 'chatbot') router.push(`/${base}/chatbot`);
+        if (key === 'settings') router.push(`/${base}/settings`);
     };
 
     const renderItem = ({ item }) => {

@@ -62,7 +62,7 @@ export default function StudentDashboard() {
                 router.push('/student');
                 break;
             case 'bell':
-                router.push('/student/notifications');
+                router.push('/student/notification');
                 break;
             case 'chat':
                 router.push('/student/chatbot');

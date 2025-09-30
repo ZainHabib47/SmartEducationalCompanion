@@ -116,39 +116,62 @@ export default function StudentNotificationScreen() {
         }
     };
 
+    const handleDelete = (id) => {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+        setExpandedItems((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+        });
+    };
+
+    const handleMarkRead = (id) => {
+        setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
+    };
+
     const renderNotification = ({ item }) => {
         const isExpanded = expandedItems.has(item.id);
-        
+
         return (
             <View style={[styles.notificationCard, !item.isRead && styles.unreadCard]}>
-                <TouchableOpacity
-                    style={styles.notificationHeader}
-                    onPress={() => toggleExpanded(item.id)}
-                    activeOpacity={0.7}
-                >
-                    <View style={styles.notificationTitleRow}>
-                        <View style={styles.titleContainer}>
-                            <Text style={[styles.notificationTitle, !item.isRead && styles.unreadTitle]}>
-                                {item.title}
-                            </Text>
-                            <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(item.priority) }]} />
-                        </View>
-                        <Ionicons 
-                            name={isExpanded ? 'chevron-up' : 'chevron-down'} 
-                            size={20} 
-                            color={COLORS.arrow} 
-                        />
+                {!item.isRead && <View style={styles.unreadDot} />}
+                <View style={styles.headerRow}>
+                    <View style={styles.titleContainer}>
+                        <Text style={[styles.notificationTitle, !item.isRead && styles.unreadTitle]} numberOfLines={2}>
+                            {item.title}
+                        </Text>
                     </View>
-                    <Text style={styles.notificationDate}>{item.date}</Text>
-                </TouchableOpacity>
-                
+                    <View style={styles.actionsInline}>
+                        {!item.isRead && (
+                            <TouchableOpacity
+                                style={styles.iconOnlyButton}
+                                onPress={() => handleMarkRead(item.id)}
+                                activeOpacity={0.85}
+                            >
+                                <Ionicons name="checkmark-done" size={18} color="#2196F3" />
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity
+                            style={[styles.iconOnlyButton, styles.readIconButton]}
+                            onPress={() => toggleExpanded(item.id)}
+                            activeOpacity={0.85}
+                        >
+                            <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={20} color="#4CAF50" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.iconOnlyButton, styles.deleteIconButton]}
+                            onPress={() => handleDelete(item.id)}
+                            activeOpacity={0.85}
+                        >
+                            <Ionicons name="trash" size={18} color="#E53935" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
                 {isExpanded && (
                     <View style={styles.notificationContent}>
+                        <Text style={styles.notificationDate}>{item.date}</Text>
                         <Text style={styles.notificationText}>{item.content}</Text>
-                        <TouchableOpacity style={styles.readMoreButton}>
-                            <Text style={styles.readMoreText}>Read More</Text>
-                            <Ionicons name="arrow-forward" size={16} color={COLORS.arrow} />
-                        </TouchableOpacity>
                     </View>
                 )}
             </View>
@@ -160,6 +183,24 @@ export default function StudentNotificationScreen() {
             <StatusBar barStyle="light-content" backgroundColor={COLORS.inputBg} />
             
             <CustomHeader title="Notifications" />
+
+            {/* Counts Bar */}
+            <View style={styles.countsBar}>
+                <View style={styles.countItem}>
+                    <Text style={styles.countLabel}>Unread</Text>
+                    <Text style={styles.countValue}>{notifications.filter((n) => !n.isRead).length}</Text>
+                </View>
+                <View style={styles.countDivider} />
+                <View style={styles.countItem}>
+                    <Text style={styles.countLabel}>Read</Text>
+                    <Text style={styles.countValue}>{notifications.filter((n) => n.isRead).length}</Text>
+                </View>
+                <View style={styles.countDivider} />
+                <View style={styles.countItem}>
+                    <Text style={styles.countLabel}>Total</Text>
+                    <Text style={styles.countValue}>{notifications.length}</Text>
+                </View>
+            </View>
 
             {/* Scrollable Notifications List */}
             <View style={styles.contentContainer}>
@@ -176,7 +217,7 @@ export default function StudentNotificationScreen() {
                         />
                     }
                     contentContainerStyle={styles.listContainer}
-                    showsVerticalScrollIndicator={false}
+                    showsVerticalScrollIndicator={true}
                 />
             </View>
 
@@ -228,54 +269,118 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
     },
     listContainer: {
+        paddingVertical: 15,
+        paddingBottom: 140,
+    },
+    countsBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 10,
+        marginBottom: 8,
+        marginHorizontal: 15,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: COLORS.inputBg,
+        paddingHorizontal: 12,
         paddingVertical: 10,
+    },
+    countItem: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    countLabel: {
+        fontFamily: 'Outfit',
+        fontSize: 12,
+        color: COLORS.heading,
+        marginBottom: 2,
+    },
+    countValue: {
+        fontFamily: 'Griffter',
+        fontSize: 18,
+        color: COLORS.heading,
+    },
+    countDivider: {
+        width: 1,
+        height: 24,
+        backgroundColor: COLORS.inputBg,
+        opacity: 0.5,
     },
     notificationCard: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 8,
-        marginBottom: 6,
+        borderRadius: 12,
+        marginBottom: 10,
+        marginHorizontal: 15,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.08,
         shadowRadius: 2,
         elevation: 2,
-        borderLeftWidth: 3,
-        borderLeftColor: COLORS.link,
+        borderWidth: 2,
+        borderColor: COLORS.inputBg,
+        position: 'relative',
     },
-    unreadCard: {
-        borderLeftColor: COLORS.inputBg,
-        backgroundColor: '#F8F9FA',
+    unreadCard: {},
+    unreadDot: {
+        position: 'absolute',
+        top: -8,
+        left: -8,
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        backgroundColor: '#FFC107',
+        zIndex: 2,
     },
-    notificationHeader: {
-        padding: 12,
-    },
-    notificationTitleRow: {
+    headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 4,
+        paddingHorizontal: 12,
+        paddingVertical: 14,
+        minHeight: 68,
     },
     titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
         flex: 1,
+        paddingRight: 10,
     },
     notificationTitle: {
-        fontFamily: 'Outfit',
-        fontSize: 16,
-        fontWeight: '500',
+        fontFamily: 'Griffter',
+        fontSize: 18,
         color: COLORS.heading,
         flex: 1,
         marginRight: 8,
+        lineHeight: 22,
     },
     unreadTitle: {
         fontWeight: '600',
     },
-    priorityDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
+    actionsInline: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
     },
+    iconOnlyButton: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 4,
+    },
+    readIconButton: {
+        borderWidth: 2,
+        borderColor: '#4CAF50',
+    },
+    deleteIconButton: {
+        borderWidth: 2,
+        borderColor: '#E53935',
+    },
+    actionButton: {},
+    readButton: {},
+    deleteButton: {},
+    actionText: {},
     notificationDate: {
         fontFamily: 'Outfit',
         fontSize: 12,
@@ -284,6 +389,7 @@ const styles = StyleSheet.create({
     notificationContent: {
         paddingHorizontal: 12,
         paddingBottom: 12,
+        paddingTop: 8,
         borderTopWidth: 1,
         borderTopColor: '#E0E0E0',
     },
